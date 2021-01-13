@@ -194,7 +194,10 @@ class Zauber:
                         self._currentProgram = Program(
                             data["in"], data["id"], self._cubePattern.pattern)
                     self._currentInstructionId = data["ci"]
-                    self._programRunningTime.setRunningTimeInMS(int(data["rt"]))
+                    if self._programRunningTime == None:
+                        self._programRunningTime = StoppWatch()
+                    else:
+                        self._programRunningTime.setRunningTimeInMS(int(data["rt"]))
                 if (data.__contains__("li")):
                     self._cubePattern.imposeInstructions(
                         data["li"])

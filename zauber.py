@@ -48,6 +48,12 @@ class Zauber:
         resp = web.json_response(
             {
                 "status": self._status,
+                "program":  self._currentProgram.instructions if self._currentProgram.instructions != None else "",
+                "programId": self._currentProgram.id if self._currentProgram.id != None else "",
+                "currentInstructionId": self._currentInstructionId if self._currentInstructionId != None else "",
+                "currentPattern": self._cubePattern.pattern,
+                "futurePattern": self._futureCubePattern,
+                "time": self._programRunningTime.runningTime,
             },
             status=200
         )
@@ -55,6 +61,10 @@ class Zauber:
 
     async def handlerPatchStatus(self, request):
         command = request.rel_url.name
+        if command != "RUN" or command != "PAUSE":
+            return web.json_response(
+                status=403
+            )
         await self._arduinoConnection.sendStatus(command)
         resp = web.json_response(
             {
@@ -78,7 +88,6 @@ class Zauber:
                 {
                     "currentProgram": self._currentProgram.instructions,
                     "currentProgramId": self._currentProgram.id,
-                    "currentProgramLength": self._currentProgram.length,
                     "currentInstructionId": self._currentInstructionId,
                 },
                 status=200
@@ -92,7 +101,7 @@ class Zauber:
                     "msg": "A program is already running."
                 },
                 status=403)
-        
+
         inst = request.rel_url.name
         return self._createAndSendProgramByInstructions(inst)
 
@@ -143,6 +152,7 @@ class Zauber:
         self._currentProgram = Program(
             programData["programInstructions"], programData["programId"], self._cubePattern.pattern)
         self._currentInstructionId = 0
+        self._status = "RUN"
         self._programRunningTime = StoppWatch()
         return web.json_response(
             {
@@ -197,7 +207,8 @@ class Zauber:
                     if self._programRunningTime == None:
                         self._programRunningTime = StoppWatch()
                     else:
-                        self._programRunningTime.setRunningTimeInMS(int(data["rt"]))
+                        self._programRunningTime.setRunningTimeInMS(
+                            int(data["rt"]))
                 if (data.__contains__("li")):
                     self._cubePattern.imposeInstructions(
                         data["li"])

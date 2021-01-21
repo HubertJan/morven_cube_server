@@ -38,12 +38,12 @@ class ArduinoConnection:
             return True
         return False
     
-    def sendStatus(self, newStatus):
-        if(newStatus == "working"):
-            self._sendCommand("continue")
-        elif(newStatus == "paused" ):
-            self._sendCommand("pause")
-    
+    async def sendStatus(self, newStatus):
+        if(newStatus == "PAUSE"):
+            await self._sendCommand("pause true")
+        elif(newStatus == "RUN" ):
+            await self._sendCommand("pause false")
+
     async def loopReceivingData(self):
         while True:
             await self._receiveData()

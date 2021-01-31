@@ -52,7 +52,20 @@ class Zauber:
                 "programId": self._currentProgram.id if self._currentProgram.id != None else "",
                 "currentInstructionId": self._currentInstructionId if self._currentInstructionId != None else "",
                 "currentPattern": self._cubePattern.pattern,
-                "futurePattern": self._futureCubePattern,
+            },
+            status=200
+        )
+        return resp
+    
+    async def handlerGetProcess(self, request):
+        resp = web.json_response(
+            {
+                "status": self._status,
+                "program":  self._currentProgram.instructions if self._currentProgram.instructions != None else "",
+                "programId": self._currentProgram.id if self._currentProgram.id != None else "",
+                "currentInstructionId": self._currentInstructionId if self._currentInstructionId != None else "",
+                "startPattern": self._cubePattern.pattern,
+                "endPattern": self._futureCubePattern,
                 "time": self._programRunningTime.runningTime,
             },
             status=200
@@ -103,7 +116,7 @@ class Zauber:
                 status=403)
 
         inst = request.rel_url.name
-        return self._createAndSendProgramByInstructions(inst)
+        return await self._createAndSendProgramByInstructions(inst)
 
     async def handlerGetPattern(self, request):
         resp = web.json_response(

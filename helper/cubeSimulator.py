@@ -124,7 +124,7 @@ class CubeSimulator:
     @staticmethod
     def validCheckOfPattern(patternString):
         pattern = list(patternString)
-        colorCounters = {};
+        colorCounters = {}
         instDic = CubeSimulator.instructionDic
         for instructionRef in instDic:
             colorCounters[instructionRef] = 0
@@ -137,7 +137,7 @@ class CubeSimulator:
         for field in pattern:
             if(colorCounters[field] == None):
                 return False
-            colorCounters[field] += 1;
+            colorCounters[field] += 1
         for counterRef in colorCounters:
             if colorCounters[counterRef] != 9:
                 return False

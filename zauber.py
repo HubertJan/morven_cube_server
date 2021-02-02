@@ -26,7 +26,7 @@ class Zauber:
             self._currentProgram: Program = None
             self._status = "NOT FETCHED"
             self._currentInstructionId = None
-            self._programRunningTime: StoppWatch = None
+            self._programRunningTime = 0
             self._server = web.Application()
             self._routes = [
                 web.get("/status", self.handlerGetStatus),
@@ -166,7 +166,7 @@ class Zauber:
             programData["programInstructions"], programData["programId"], self._cubePattern.pattern)
         self._currentInstructionId = 0
         self._status = "RUN"
-        self._programRunningTime = StoppWatch()
+        self._programRunningTime = 0
         return web.json_response(
             {
                 "currentProgram": self._currentProgram.instructions,
@@ -202,7 +202,7 @@ class Zauber:
                            self._currentProgram.startPattern,
                            self._currentProgram.endPattern,
                            self._currentProgram.instructions,
-                           self._programRunningTime.runningTime,
+                           self._programRunningTime,
                            date_time,
                            )
 
@@ -217,18 +217,13 @@ class Zauber:
                         self._currentProgram = Program(
                             data["in"], data["id"], self._cubePattern.pattern)
                     self._currentInstructionId = data["ci"]
-                    if self._programRunningTime == None:
-                        self._programRunningTime = StoppWatch()
-                    else:
-                        self._programRunningTime.setRunningTimeInMS(
-                            int(data["rt"]))
+                    self._programRunningTime = int(data["rt"])
                 if (data.__contains__("li")):
                     self._cubePattern.imposeInstructions(
                         data["li"])
                 if (data.__contains__("st")):
                     self._status = data["st"]
                 if(self._status == "FINISHED"):
-                    self._programRunningTime.stop()
                     self._saveCurrentProgramAsRecord()
                 self._arduinoConnection.receivedInfo.clear()
 

@@ -12,7 +12,7 @@ class ArduinoConnection:
 
     async def connect(self):
         try:
-            streams = await serialAsyncio.open_serial_connection(url='/COM3', baudrate=9600)
+            streams = await serialAsyncio.open_serial_connection(url=self._port, baudrate=self._baudrate)
             self._reader : asyncio.StreamReader = streams[0]
             self._writer : asyncio.StreamWriter = streams[1]
             self._writer.write(b'foo\n')

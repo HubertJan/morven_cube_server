@@ -21,7 +21,7 @@ class Zauber:
     def __init__(self, ):
         try:
             self._db = RubiksDatabase("/db_cube.csv")
-            self._arduinoConnection = ArduinoConnection("COM6", 9600)
+            self._arduinoConnection = ArduinoConnection("/COM3", 9600)
             self._cubePattern = CubePattern(self._getCamData())
             self._currentProgram: Program = None
             self._status = "NOT FETCHED"
@@ -35,6 +35,7 @@ class Zauber:
                 web.post("/program/{arguments}", self.handlerPostProgram),
                 web.get("/pattern", self.handlerGetPattern),
                 web.post("/pattern/{arguments}", self.handlerPostPattern),
+                web.get("/process", self.handlerGetProcess),
                 web.get("/records", self.handlerGetRecords),
             ]
         except:

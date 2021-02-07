@@ -1,5 +1,5 @@
 from helper.kociemba_extend import Kociemba as kociemba
-
+from pyTwistyScrambler import scrambler333
 
 class CubeSimulator:
 
@@ -120,6 +120,27 @@ class CubeSimulator:
             if(isValid == False):
                 return False
         return True
+    
+    @staticmethod
+    def getScramble():
+        return CubeSimulator.toFormat(scrambler333.get_WCA_scramble())
+
+    @staticmethod
+    def toFormat(solution):
+        solList = list(solution.split(" "))
+        improvedSolution = ""
+        isFirst = True
+        for ins in solList:
+            if len(ins) == 1:
+                ins = ins + "1"
+            elif ins[1] == "'":
+                ins = ins[0] + "3"
+            if(isFirst):
+                isFirst = False
+            else:
+                ins = " " + ins
+            improvedSolution += ins
+        return improvedSolution    
 
     @staticmethod
     def validCheckOfPattern(patternString):

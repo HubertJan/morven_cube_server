@@ -21,8 +21,9 @@ class Zauber:
     def __init__(self, ):
         try:
             self._db = RubiksDatabase("/db_cube.csv")
-            self._arduinoConnection = ArduinoConnection("/COM3", 9600)
-            self._cubePattern = CubePattern(self._getCamData())
+            self._mainArduinoConnection = ArduinoConnection("/COM3", 9600)
+            self._secondaryArduinoConnection = ArduinoConnection("/COM4", 9600)
+            self._cubePattern = None
             self._currentProgram: Program = None
             self._status = "NOT FETCHED"
             self._currentInstructionId = None
@@ -37,6 +38,7 @@ class Zauber:
                 web.post("/pattern/{arguments}", self.handlerPostPattern),
                 web.get("/process", self.handlerGetProcess),
                 web.get("/records", self.handlerGetRecords),
+                web.get("/sensor", self.handlerGetSensor)
             ]
         except:
             return
@@ -49,9 +51,7 @@ class Zauber:
         resp = web.json_response(
             {
                 "status": self._status,
-                "program":  self._currentProgram.instructions if self._currentProgram.instructions != None else "",
                 "programId": self._currentProgram.id if self._currentProgram.id != None else "",
-                "currentInstructionId": self._currentInstructionId if self._currentInstructionId != None else "",
                 "currentPattern": self._cubePattern.pattern,
             },
             status=200
@@ -65,13 +65,25 @@ class Zauber:
                 "program":  self._currentProgram.instructions if self._currentProgram.instructions != None else "",
                 "programId": self._currentProgram.id if self._currentProgram.id != None else "",
                 "currentInstructionId": self._currentInstructionId if self._currentInstructionId != None else "",
-                "startPattern": self._cubePattern.pattern,
-                "endPattern": self._futureCubePattern,
-                "time": self._programRunningTime.runningTime,
+                "startPattern": self._currentProgram.startPattern,
+                "endPattern": self._currentProgram.endPattern,
+                "time": self._programRunningTime,
             },
             status=200
         )
         return resp
+    
+    async def handlerGetSensor(self, request):
+        resp = web.json_response(
+            {
+                "temp": 5,
+                "temp2": 30,
+                "c2": 4
+            },
+            status=200
+        )
+        return resp
+    
 
     async def handlerPatchStatus(self, request):
         command = request.rel_url.name
@@ -79,7 +91,7 @@ class Zauber:
             return web.json_response(
                 status=403
             )
-        await self._arduinoConnection.sendStatus(command)
+        await self._mainArduinoConnection.sendStatus(command)
         resp = web.json_response(
             {
                 "status": self._status,
@@ -136,10 +148,14 @@ class Zauber:
                     "msg": "A program is already running."
                 },
                 status=403)
+        isSafety = int(request.rel_url.query["safety"]) == 1
         command = request.rel_url.name
         if(command == "solve" or command == ""):
             inst = kociemba.solve(self._cubePattern.pattern)
-            resp = await self._createAndSendProgramByInstructions(inst)
+            resp = await self._createAndSendProgramByInstructions(inst, isSafety)
+        if(command == "scramble"):
+            inst = CubeSimulator.getScramble()
+            resp = await self._createAndSendProgramByInstructions(inst, isSafety)
         else:
             resp = await self._createAndSendProgramByPattern(command)
         return resp
@@ -153,7 +169,7 @@ class Zauber:
         )
         return resp
 
-    async def _createAndSendProgramByInstructions(self, instructions: str):
+    async def _createAndSendProgramByInstructions(self, instructions: str, safety: bool):
         if(CubeSimulator.validCheckOfInstructions(instructions) == False):
             return web.json_response(
                 {
@@ -162,7 +178,7 @@ class Zauber:
                 status=400
             )
         programId = uuid.uuid4().hex
-        programData = await self._arduinoConnection.sendProgram(instructions, programId)
+        programData = await self._mainArduinoConnection.sendProgram(instructions, programId)
         self._currentProgram = Program(
             programData["programInstructions"], programData["programId"], self._cubePattern.pattern)
         self._currentInstructionId = 0
@@ -209,10 +225,10 @@ class Zauber:
 
     async def _handleReceivedData(self):
         while True:
-            if(len(self._arduinoConnection.receivedInfo) == 0):
+            if(len(self._mainArduinoConnection.receivedInfo) == 0):
                 await asyncio.sleep(0)
             else:
-                data: dict = self._arduinoConnection.receivedInfo
+                data: dict = self._mainArduinoConnection.receivedInfo
                 if (data.__contains__("id")):
                     if(self._currentProgram == None or (self._currentProgram != None and self._currentProgram.id != data["id"])):
                         self._currentProgram = Program(
@@ -226,15 +242,25 @@ class Zauber:
                     self._status = data["st"]
                 if(self._status == "FINISHED"):
                     self._saveCurrentProgramAsRecord()
-                self._arduinoConnection.receivedInfo.clear()
+                self._mainArduinoConnection.receivedInfo.clear()
+         
+    async def _handleReceivedDataSecondary(self):
+        while True:
+            if(len(self._secondaryArduinoConnection.receivedInfo) == 0):
+                await asyncio.sleep(0)
+            else:
+                data: dict = self._secondaryArduinoConnection.receivedInfo
+                self._secondaryArduinoConnection.receivedInfo.clear()
 
     async def runService(self):
-        await self._arduinoConnection.connect()
-        if(self._arduinoConnection.isConnected()):
+        await self._mainArduinoConnection.connect()
+        #await self._secondaryArduinoConnection.connect()
+        if(self._mainArduinoConnection.isConnected()):
+            self._cubePattern = CubePattern( self._getCamData())
             self._server.router.add_routes(self._routes)
             await asyncio.gather(
                 web._run_app(self._server,  host='localhost', port=9000),
-                self._arduinoConnection.loopReceivingData(),
+                self._mainArduinoConnection.loopReceivingData(),
                 self._handleReceivedData()),
         else:
             print("No arduino connection.")

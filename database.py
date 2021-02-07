@@ -23,6 +23,7 @@ class RubiksDatabase:
     @property
     def records(self):
         records = []
+        self._readFile()
         for record in self._data.values:
             recordMap = {
                 "id": record[0],

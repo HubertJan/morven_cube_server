@@ -297,12 +297,15 @@ class Zauber:
                     self._sensorData["volt3"] = data["v3"]
                 data: dict = self._secondaryArduinoConnection.receivedInfo
                 self._secondaryArduinoConnection.receivedInfo.clear()
+    
+    async def setupSecondary(self):
+        self._secondaryArduinoConnection.sendSetSensor()
+        self._cubePattern = CubePattern(self._getCamData())
 
     async def runService(self):
         await self._mainArduinoConnection.connect()
        # await self._secondaryArduinoConnection.connect()
-        if(self._mainArduinoConnection.isConnected()):
-            self._cubePattern = CubePattern(self._getCamData())
+        if(self._mainArduinoConnection.isConnected() and self._secondaryArduinoConnection.isConnected):
             self._server.router.add_routes(self._routes)
             await asyncio.gather(
                 web._run_app(self._server,  host='localhost', port=9000),

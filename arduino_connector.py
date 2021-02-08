@@ -25,8 +25,9 @@ class ArduinoConnection:
             self._writer = None
             print("Connection couldn't be established.")
 
-    async def sendProgram(self, instructions: str, programId): #replace current program
-        return await self._sendCommand("program", instructions, programId )
+    async def sendProgram(self, instructions: str, programId, isDouble = True, acc50 = 42000, acc100=43000, cc50=19, cc100=20, maxSp=4000): #replace current program
+        doubleStr =  "1" if isDouble else "0"
+        return await self._sendCommand("program", instructions, programId, doubleStr, str(acc50), str(acc100), str(cc50), str(cc100), str(maxSp))
     async def sendPrepareAndProgram(self, instructions: str, programId, prepareInstructions): #replace current program
         return await self._sendCommand("program", instructions, programId, prepareInstructions)
     

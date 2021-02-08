@@ -29,6 +29,14 @@ class Zauber:
             self._currentInstructionId = None
             self._programRunningTime = 0
             self._server = web.Application()
+            self._sensorData = {
+                "temp1" = 0,
+                "temp2" = 0,
+                "temp3" = 0,
+                "volt1" = 0,
+                "volt2" = 0,
+                "volt3" = 0,
+            }
             self._routes = [
                 web.get("/status", self.handlerGetStatus),
                 web.patch("/status/{arguments}", self.handlerPatchStatus),
@@ -57,7 +65,7 @@ class Zauber:
             status=200
         )
         return resp
-    
+
     async def handlerGetProcess(self, request):
         resp = web.json_response(
             {
@@ -72,7 +80,7 @@ class Zauber:
             status=200
         )
         return resp
-    
+
     async def handlerGetSensor(self, request):
         resp = web.json_response(
             {
@@ -83,7 +91,6 @@ class Zauber:
             status=200
         )
         return resp
-    
 
     async def handlerPatchStatus(self, request):
         command = request.rel_url.name
@@ -141,6 +148,13 @@ class Zauber:
         )
         return resp
 
+    def getOptionalArguemnts(self, optionalArguments: dict, data):
+        for key in optionalArguments.keys():
+            if key in data:
+                optionalArguments[key] = data[key]
+
+        return optionalArguments
+
     async def handlerPostPattern(self, request):
         if(self._status == "RUN"):
             return web.json_response(
@@ -148,16 +162,30 @@ class Zauber:
                     "msg": "A program is already running."
                 },
                 status=403)
-        isSafety = int(request.rel_url.query["safety"]) == 1
+
+        optionalArguments = {
+            "isDouble": True,
+            "acc50": 42000,
+            "acc100": 4300,
+            "cc50": 19,
+            "cc100": 20,
+            "maxSp": 4000,
+        }
+
+        optionalArguments = self.getOptionalArguemnts(
+            optionalArguments, request.rel_url.query)
+
         command = request.rel_url.name
+
         if(command == "solve" or command == ""):
             inst = kociemba.solve(self._cubePattern.pattern)
-            resp = await self._createAndSendProgramByInstructions(inst, isSafety)
-        if(command == "scramble"):
+            resp = await self._createAndSendProgramByInstructions(inst, isDouble=optionalArguments["isDouble"], acc50=optionalArguments["acc50"], acc100=optionalArguments["acc100"], cc50=optionalArguments["cc50"], cc100=optionalArguments["cc100"], maxSp=optionalArguments["maxSp"])
+        elif(command == "scramble"):
             inst = CubeSimulator.getScramble()
-            resp = await self._createAndSendProgramByInstructions(inst, isSafety)
+            resp = await self._createAndSendProgramByInstructions(inst, isDouble=optionalArguments["isDouble"], acc50=optionalArguments["acc50"], acc100=optionalArguments["acc100"], cc50=optionalArguments["cc50"], cc100=optionalArguments["cc100"], maxSp=optionalArguments["maxSp"])
         else:
-            resp = await self._createAndSendProgramByPattern(command)
+            pattern = command
+            resp = await self._createAndSendProgramByPattern(pattern, isDouble=optionalArguments["isDouble"], acc50=optionalArguments["acc50"], acc100=optionalArguments["acc100"], cc50=optionalArguments["cc50"], cc100=optionalArguments["cc100"], maxSp=optionalArguments["maxSp"])
         return resp
 
     async def handlerGetRecords(self, request):
@@ -169,7 +197,7 @@ class Zauber:
         )
         return resp
 
-    async def _createAndSendProgramByInstructions(self, instructions: str, safety: bool):
+    async def _createAndSendProgramByInstructions(self, instructions: str, isDouble=True, acc50=42000, acc100=43000, cc50=19, cc100=20, maxSp=4000):
         if(CubeSimulator.validCheckOfInstructions(instructions) == False):
             return web.json_response(
                 {
@@ -178,7 +206,7 @@ class Zauber:
                 status=400
             )
         programId = uuid.uuid4().hex
-        programData = await self._mainArduinoConnection.sendProgram(instructions, programId)
+        programData = await self._mainArduinoConnection.sendProgram(instructions, programId, isDouble=isDouble, acc50=acc50, acc100=acc100, cc50=cc50, cc100=cc100, maxSp=maxSp)
         self._currentProgram = Program(
             programData["programInstructions"], programData["programId"], self._cubePattern.pattern)
         self._currentInstructionId = 0
@@ -194,10 +222,10 @@ class Zauber:
             status=200
         )
 
-    async def _createAndSendProgramByPattern(self, pattern: str):
+    async def _createAndSendProgramByPattern(self, pattern: str, isDouble=True, acc50=42000, acc100=43000, cc50=19, cc100=20, maxSp=4000):
         if(CubeSimulator.validCheckOfPattern(pattern)):
             inst = kociemba.solve(self._cubePattern.pattern, pattern)
-            return await self._createAndSendProgramByInstructions(inst)
+            return await self._createAndSendProgramByInstructions(inst,  isDouble=isDouble, acc50=acc50, acc100=acc100, cc50=cc50, cc100=cc100, maxSp=maxSp)
         else:
             return web.json_response(
                 {
@@ -243,20 +271,32 @@ class Zauber:
                 if(self._status == "FINISHED"):
                     self._saveCurrentProgramAsRecord()
                 self._mainArduinoConnection.receivedInfo.clear()
-         
+
     async def _handleReceivedDataSecondary(self):
         while True:
             if(len(self._secondaryArduinoConnection.receivedInfo) == 0):
                 await asyncio.sleep(0)
             else:
+                if (data.__contains__("t1")):
+                    self._sensorData["temp1"] = data["t1"]
+                if (data.__contains__("t2")):
+                    self._sensorData["temp2"] = data["t2"]
+                if (data.__contains__("t3")):
+                    self._sensorData["temp3"] = data["t3"]
+                if (data.__contains__("v1")):
+                    self._sensorData["volt1"] = data["v1"]
+                if (data.__contains__("v2")):
+                    self._sensorData["volt2"] = data["v2"]
+                if (data.__contains__("v3")):
+                    self._sensorData["volt3"] = data["v3"]
                 data: dict = self._secondaryArduinoConnection.receivedInfo
                 self._secondaryArduinoConnection.receivedInfo.clear()
 
     async def runService(self):
         await self._mainArduinoConnection.connect()
-        #await self._secondaryArduinoConnection.connect()
+        # await self._secondaryArduinoConnection.connect()
         if(self._mainArduinoConnection.isConnected()):
-            self._cubePattern = CubePattern( self._getCamData())
+            self._cubePattern = CubePattern(self._getCamData())
             self._server.router.add_routes(self._routes)
             await asyncio.gather(
                 web._run_app(self._server,  host='localhost', port=9000),

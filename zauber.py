@@ -30,12 +30,12 @@ class Zauber:
             self._programRunningTime = 0
             self._server = web.Application()
             self._sensorData = {
-                "temp1" = 0,
-                "temp2" = 0,
-                "temp3" = 0,
-                "volt1" = 0,
-                "volt2" = 0,
-                "volt3" = 0,
+                "temp1" : 0,
+                "temp2" : 0,
+                "temp3" : 0,
+                "volt1" : 0,
+                "volt2" : 0,
+                "volt3" : 0,
             }
             self._routes = [
                 web.get("/status", self.handlerGetStatus),
@@ -294,7 +294,7 @@ class Zauber:
 
     async def runService(self):
         await self._mainArduinoConnection.connect()
-        # await self._secondaryArduinoConnection.connect()
+        await self._secondaryArduinoConnection.connect()
         if(self._mainArduinoConnection.isConnected()):
             self._cubePattern = CubePattern(self._getCamData())
             self._server.router.add_routes(self._routes)

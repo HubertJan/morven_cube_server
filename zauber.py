@@ -54,6 +54,12 @@ class Zauber:
 
     @property
     def _futureCubePattern(self):
+        self._secondaryArduinoConnection.sendLight("BL")
+        self._secondaryArduinoConnection.sendLight("WH")
+        self._secondaryArduinoConnection.sendMotor("OP")
+        self._secondaryArduinoConnection.sendLight("BL")
+        self._secondaryArduinoConnection.sendLight("WH")
+        self._secondaryArduinoConnection.sendMotor("CL")
         return self._cubePattern.pattern
 
     async def handlerGetStatus(self, request):
@@ -236,12 +242,7 @@ class Zauber:
             )
 
     def _getCamData(self):
-    #    self._secondaryArduinoConnection.sendLight("BL")
-   #     self._secondaryArduinoConnection.sendLight("WH")
-     #   self._secondaryArduinoConnection.sendMotor("OP")
-    #    self._secondaryArduinoConnection.sendLight("BL")
-  #      self._secondaryArduinoConnection.sendLight("WH")
-   #     self._secondaryArduinoConnection.sendMotor("CL")
+        self._secondaryArduinoConnection.
         time.sleep(5)
         return 'DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD'
 

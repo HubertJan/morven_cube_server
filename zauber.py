@@ -10,6 +10,7 @@ import numpy as np
 from helper.kociemba_extend import Kociemba as kociemba
 from database import RubiksDatabase
 from arduino_connector import ArduinoConnection
+from stm_connector import STMConnector
 from classes.cube_pattern import CubePattern
 from helper.cubeSimulator import CubeSimulator
 from classes.program import Program
@@ -22,7 +23,7 @@ class Zauber:
         try:
             self._db = RubiksDatabase("/db_cube.csv")
             self._mainArduinoConnection = ArduinoConnection("/COM3", 9600)
-            self._secondaryArduinoConnection = ArduinoConnection("/COM4", 9600)
+            self._secondaryArduinoConnection = STMConnector("/COM4", 9600)
             self._cubePattern = None
             self._currentProgram: Program = None
             self._status = "NOT FETCHED"
@@ -53,6 +54,12 @@ class Zauber:
 
     @property
     def _futureCubePattern(self):
+        self._secondaryArduinoConnection.sendLight("BL")
+        self._secondaryArduinoConnection.sendLight("WH")
+        self._secondaryArduinoConnection.sendMotor("OP")
+        self._secondaryArduinoConnection.sendLight("BL")
+        self._secondaryArduinoConnection.sendLight("WH")
+        self._secondaryArduinoConnection.sendMotor("CL")
         return self._cubePattern.pattern
 
     async def handlerGetStatus(self, request):
@@ -84,8 +91,8 @@ class Zauber:
     async def handlerGetSensor(self, request):
         resp = web.json_response(
             {
-                "temp": 5,
-                "temp2": 30,
+                "temp": self._sensorData["temp1"],
+                "temp2": self._sensorData["temp2"],
                 "c2": 4
             },
             status=200
@@ -235,7 +242,7 @@ class Zauber:
             )
 
     def _getCamData(self):
-        print("Receiving camData.")
+        self._secondaryArduinoConnection.
         time.sleep(5)
         return 'DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD'
 
@@ -294,7 +301,7 @@ class Zauber:
 
     async def runService(self):
         await self._mainArduinoConnection.connect()
-        await self._secondaryArduinoConnection.connect()
+       # await self._secondaryArduinoConnection.connect()
         if(self._mainArduinoConnection.isConnected()):
             self._cubePattern = CubePattern(self._getCamData())
             self._server.router.add_routes(self._routes)

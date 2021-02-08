@@ -3,7 +3,7 @@ import serial
 import serial_asyncio as serialAsyncio
 import asyncio
 
-class ArduinoConnection:
+class STMConnector:
     def __init__(self, port, baudrate ):
         self._port = port
         self._baudrate = baudrate

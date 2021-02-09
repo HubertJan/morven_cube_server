@@ -49,7 +49,7 @@ class STMConnector:
         data = dataString[2:len(dataString)-5]
         dataSenderList =  data.split(";", 1)
         sender = dataSenderList[0]
-        if(sender == "debug"):
+        if(sender == "debug"):            
             print (dataSenderList[1])
         elif(sender == "response"):
             self._receivedResponses.append(dataSenderList[1])

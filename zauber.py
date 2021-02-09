@@ -22,24 +22,30 @@ class Zauber:
     def __init__(self, ):
         try:
             self._db = RubiksDatabase("/db_cube.csv")
-            self._mainArduinoConnection = ArduinoConnection("/COM3", 9600)
-            self._secondaryArduinoConnection = STMConnector("/COM4", 9600)
+            self._mainArduinoConnection = ArduinoConnection("/COM3", 115200)
+         #   self._secondaryArduinoConnection = STMConnector("COM16", 115200)
             self._cubePattern = None
             self._currentProgram: Program = None
             self._status = "NOT FETCHED"
             self._currentInstructionId = None
             self._programRunningTime = 0
+            self._isVerified = False
+            self._toVerifyPattern = ""
             self._server = web.Application()
             self._sensorData = {
-                "temp1" : 0,
-                "temp2" : 0,
-                "temp3" : 0,
-                "volt1" : 0,
-                "volt2" : 0,
-                "volt3" : 0,
+                "temp1": 0,
+                "temp2": 0,
+                "temp3": 0,
+                "volt1": 0,
+                "volt2": 0,
+                "volt3": 0,
             }
             self._routes = [
                 web.get("/status", self.handlerGetStatus),
+                web.get("/verified", self.handlerGetVerified),
+                web.patch("/verified/true", self.handlerPostVerified),
+                web.get("/toVerifyPattern", self.handlerGetToVerifyPattern),
+                web.patch("/toVerifyPattern/{arguments}", self.handlerPatchToVerifyPattern),
                 web.patch("/status/{arguments}", self.handlerPatchStatus),
                 web.get("/program", self.handlerGetProgram),
                 web.post("/program/{arguments}", self.handlerPostProgram),
@@ -54,12 +60,6 @@ class Zauber:
 
     @property
     def _futureCubePattern(self):
-        self._secondaryArduinoConnection.sendLight("BL")
-        self._secondaryArduinoConnection.sendLight("WH")
-        self._secondaryArduinoConnection.sendMotor("OP")
-        self._secondaryArduinoConnection.sendLight("BL")
-        self._secondaryArduinoConnection.sendLight("WH")
-        self._secondaryArduinoConnection.sendMotor("CL")
         return self._cubePattern.pattern
 
     async def handlerGetStatus(self, request):
@@ -72,6 +72,51 @@ class Zauber:
             status=200
         )
         return resp
+
+    async def handlerGetVerified(self, request):
+        resp = web.json_response(
+            {
+                "verified": self._isVerified,
+            },
+            status=200
+        )
+        return resp
+
+    async def handlerGetToVerifyPattern(self, request):
+        if (self._toVerifyPattern == ""):
+            return web.json_response(
+                status=200)
+        resp = web.json_response(
+            {
+                "pattern": self._toVerifyPattern.pattern,
+            },
+            status=200
+        )
+        return resp
+    
+    async def handlerPatchToVerifyPattern(self, request):
+        self._toVerifyPattern = CubePattern(request.rel_url.name)
+        resp = web.json_response(
+            {
+                "pattern": self._toVerifyPattern.pattern,
+            },
+            status=200)
+        return resp
+
+    async def handlerPostVerified(self, request):
+        if (self._isVerified):
+            return web.json_response(
+                status=303)
+        if self._toVerifyPattern == "":
+              return web.json_response(
+                status=400)
+        self._isVerified = True
+        self._cubePattern = self._toVerifyPattern
+        return web.json_response(
+            {
+                "verified": True
+            },status=200
+        )
 
     async def handlerGetProcess(self, request):
         resp = web.json_response(
@@ -93,6 +138,10 @@ class Zauber:
             {
                 "temp": self._sensorData["temp1"],
                 "temp2": self._sensorData["temp2"],
+                "temp3": self._sensorData["temp3"],
+                "volt1": self._sensorData["volt1"],
+                "volt2": self._sensorData["volt2"],
+                "volt3": self._sensorData["volt3"],
                 "c2": 4
             },
             status=200
@@ -242,6 +291,12 @@ class Zauber:
             )
 
     def _getCamData(self):
+        #    self._secondaryArduinoConnection.sendLight("BL")
+       #     self._secondaryArduinoConnection.sendLight("WH")
+     #   self._secondaryArduinoConnection.sendMotor("OP")
+        #    self._secondaryArduinoConnection.sendLight("BL")
+      #      self._secondaryArduinoConnection.sendLight("WH")
+       #     self._secondaryArduinoConnection.sendMotor("CL")
         time.sleep(5)
         return 'DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD'
 
@@ -278,16 +333,44 @@ class Zauber:
                     self._saveCurrentProgramAsRecord()
                 self._mainArduinoConnection.receivedInfo.clear()
 
+    async def _handleReceivedDataSecondary(self):
+        while True:
+            if(len(self._secondaryArduinoConnection.receivedInfo) == 0):
+                await asyncio.sleep(0)
+            else:
+                data: dict = self._secondaryArduinoConnection.receivedInfo
+                if (data.__contains__("t1")):
+                    self._sensorData["temp1"] = data["t1"]
+                if (data.__contains__("t2")):
+                    self._sensorData["temp2"] = data["t2"]
+                if (data.__contains__("t3")):
+                    self._sensorData["temp3"] = data["t3"]
+                if (data.__contains__("v1")):
+                    self._sensorData["volt1"] = data["v1"]
+                if (data.__contains__("v2")):
+                    self._sensorData["volt2"] = data["v2"]
+                if (data.__contains__("v3")):
+                    self._sensorData["volt3"] = data["v3"]
+                self._secondaryArduinoConnection.receivedInfo.clear()
+
+    async def setupSecondary(self):
+        self._toVerifyPattern = CubePattern(self._getCamData())
+       # await self._secondaryArduinoConnection.sendSetSensor()
 
     async def runService(self):
         await self._mainArduinoConnection.connect()
-        self._cubePattern = CubePattern(self._getCamData())
        # await self._secondaryArduinoConnection.connect()
-        if(self._mainArduinoConnection.isConnected() and self._secondaryArduinoConnection.isConnected):
+        self._cubePattern = CubePattern(
+            "DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")
+        if(self._mainArduinoConnection.isConnected()): #and self._secondaryArduinoConnection.isConnected()):
+
             self._server.router.add_routes(self._routes)
             await asyncio.gather(
                 web._run_app(self._server,  host='localhost', port=9000),
                 self._mainArduinoConnection.loopReceivingData(),
-                self._handleReceivedData()),
+                self._handleReceivedData(),
+                #self._secondaryArduinoConnection.loopReceivingData(),
+              #  self._handleReceivedDataSecondary(),
+                self.setupSecondary()),
         else:
             print("No arduino connection.")

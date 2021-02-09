@@ -242,7 +242,6 @@ class Zauber:
             )
 
     def _getCamData(self):
-        self._secondaryArduinoConnection.
         time.sleep(5)
         return 'DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD'
 
@@ -279,32 +278,10 @@ class Zauber:
                     self._saveCurrentProgramAsRecord()
                 self._mainArduinoConnection.receivedInfo.clear()
 
-    async def _handleReceivedDataSecondary(self):
-        while True:
-            if(len(self._secondaryArduinoConnection.receivedInfo) == 0):
-                await asyncio.sleep(0)
-            else:
-                if (data.__contains__("t1")):
-                    self._sensorData["temp1"] = data["t1"]
-                if (data.__contains__("t2")):
-                    self._sensorData["temp2"] = data["t2"]
-                if (data.__contains__("t3")):
-                    self._sensorData["temp3"] = data["t3"]
-                if (data.__contains__("v1")):
-                    self._sensorData["volt1"] = data["v1"]
-                if (data.__contains__("v2")):
-                    self._sensorData["volt2"] = data["v2"]
-                if (data.__contains__("v3")):
-                    self._sensorData["volt3"] = data["v3"]
-                data: dict = self._secondaryArduinoConnection.receivedInfo
-                self._secondaryArduinoConnection.receivedInfo.clear()
-    
-    async def setupSecondary(self):
-        self._secondaryArduinoConnection.sendSetSensor()
-        self._cubePattern = CubePattern(self._getCamData())
 
     async def runService(self):
         await self._mainArduinoConnection.connect()
+        self._cubePattern = CubePattern(self._getCamData())
        # await self._secondaryArduinoConnection.connect()
         if(self._mainArduinoConnection.isConnected() and self._secondaryArduinoConnection.isConnected):
             self._server.router.add_routes(self._routes)

@@ -4,6 +4,7 @@ import time
 from aiohttp import web
 from datetime import datetime
 from enum import Enum
+from morven_cube_server.provide import provide
 
 import numpy as np
 
@@ -26,11 +27,8 @@ class Zauber:
          #   self._secondaryArduinoConnection = STMConnector("COM16", 115200)
             self._cubePattern = None
             self._currentProgram: Program = None
-            self._status = "NOT FETCHED"
             self._currentInstructionId = None
             self._programRunningTime = 0
-            self._isVerified = False
-            self._toVerifyPattern = ""
             self._server = web.Application()
             self._sensorData = {
                 "temp1": 0,
@@ -40,21 +38,6 @@ class Zauber:
                 "volt2": 0,
                 "volt3": 0,
             }
-            self._routes = [
-                web.get("/status", self.handlerGetStatus),
-                web.get("/verified", self.handlerGetVerified),
-                web.patch("/verified/true", self.handlerPostVerified),
-                web.get("/toVerifyPattern", self.handlerGetToVerifyPattern),
-                web.patch("/toVerifyPattern/{arguments}", self.handlerPatchToVerifyPattern),
-                web.patch("/status/{arguments}", self.handlerPatchStatus),
-                web.get("/program", self.handlerGetProgram),
-                web.post("/program/{arguments}", self.handlerPostProgram),
-                web.get("/pattern", self.handlerGetPattern),
-                web.post("/pattern/{arguments}", self.handlerPostPattern),
-                web.get("/process", self.handlerGetProcess),
-                web.get("/records", self.handlerGetRecords),
-                web.get("/sensor", self.handlerGetSensor)
-            ]
         except:
             return
 
@@ -62,196 +45,6 @@ class Zauber:
     def _futureCubePattern(self):
         return self._cubePattern.pattern
 
-    async def handlerGetStatus(self, request):
-        resp = web.json_response(
-            {
-                "status": self._status,
-                "programId": self._currentProgram.id if self._currentProgram.id != None else "",
-                "currentPattern": self._cubePattern.pattern,
-            },
-            status=200
-        )
-        return resp
-
-    async def handlerGetVerified(self, request):
-        resp = web.json_response(
-            {
-                "verified": self._isVerified,
-            },
-            status=200
-        )
-        return resp
-
-    async def handlerGetToVerifyPattern(self, request):
-        if (self._toVerifyPattern == ""):
-            return web.json_response(
-                status=200)
-        resp = web.json_response(
-            {
-                "pattern": self._toVerifyPattern.pattern,
-            },
-            status=200
-        )
-        return resp
-    
-    async def handlerPatchToVerifyPattern(self, request):
-        self._toVerifyPattern = CubePattern(request.rel_url.name)
-        resp = web.json_response(
-            {
-                "pattern": self._toVerifyPattern.pattern,
-            },
-            status=200)
-        return resp
-
-    async def handlerPostVerified(self, request):
-        if (self._isVerified):
-            return web.json_response(
-                status=303)
-        if self._toVerifyPattern == "":
-              return web.json_response(
-                status=400)
-        self._isVerified = True
-        self._cubePattern = self._toVerifyPattern
-        return web.json_response(
-            {
-                "verified": True
-            },status=200
-        )
-
-    async def handlerGetProcess(self, request):
-        resp = web.json_response(
-            {
-                "status": self._status,
-                "program":  self._currentProgram.instructions if self._currentProgram.instructions != None else "",
-                "programId": self._currentProgram.id if self._currentProgram.id != None else "",
-                "currentInstructionId": self._currentInstructionId if self._currentInstructionId != None else "",
-                "startPattern": self._currentProgram.startPattern,
-                "endPattern": self._currentProgram.endPattern,
-                "time": self._programRunningTime,
-            },
-            status=200
-        )
-        return resp
-
-    async def handlerGetSensor(self, request):
-        resp = web.json_response(
-            {
-                "temp": self._sensorData["temp1"],
-                "temp2": self._sensorData["temp2"],
-                "temp3": self._sensorData["temp3"],
-                "volt1": self._sensorData["volt1"],
-                "volt2": self._sensorData["volt2"],
-                "volt3": self._sensorData["volt3"],
-                "c2": 4
-            },
-            status=200
-        )
-        return resp
-
-    async def handlerPatchStatus(self, request):
-        command = request.rel_url.name
-        if command != "RUN" or command != "PAUSE":
-            return web.json_response(
-                status=403
-            )
-        await self._mainArduinoConnection.sendStatus(command)
-        resp = web.json_response(
-            {
-                "status": self._status,
-            },
-            status=200
-        )
-        return resp
-
-    async def handlerGetProgram(self, request):
-        if self._currentProgram == None:
-            resp = web.json_response(
-                {
-                    "currentProgram": None,
-                },
-                status=200
-            )
-
-        else:
-            resp = web.json_response(
-                {
-                    "currentProgram": self._currentProgram.instructions,
-                    "currentProgramId": self._currentProgram.id,
-                    "currentInstructionId": self._currentInstructionId,
-                },
-                status=200
-            )
-        return resp
-
-    async def handlerPostProgram(self, request):
-        if(self._status == "RUN"):
-            return web.json_response(
-                {
-                    "msg": "A program is already running."
-                },
-                status=403)
-
-        inst = request.rel_url.name
-        return await self._createAndSendProgramByInstructions(inst)
-
-    async def handlerGetPattern(self, request):
-        resp = web.json_response(
-            {
-                "currentPattern": self._cubePattern.pattern,
-                "futurePattern": self._futureCubePattern,
-            },
-            status=200
-        )
-        return resp
-
-    def getOptionalArguemnts(self, optionalArguments: dict, data):
-        for key in optionalArguments.keys():
-            if key in data:
-                optionalArguments[key] = data[key]
-
-        return optionalArguments
-
-    async def handlerPostPattern(self, request):
-        if(self._status == "RUN"):
-            return web.json_response(
-                {
-                    "msg": "A program is already running."
-                },
-                status=403)
-
-        optionalArguments = {
-            "isDouble": True,
-            "acc50": 42000,
-            "acc100": 4300,
-            "cc50": 19,
-            "cc100": 20,
-            "maxSp": 4000,
-        }
-
-        optionalArguments = self.getOptionalArguemnts(
-            optionalArguments, request.rel_url.query)
-
-        command = request.rel_url.name
-
-        if(command == "solve" or command == ""):
-            inst = kociemba.solve(self._cubePattern.pattern)
-            resp = await self._createAndSendProgramByInstructions(inst, isDouble=optionalArguments["isDouble"], acc50=optionalArguments["acc50"], acc100=optionalArguments["acc100"], cc50=optionalArguments["cc50"], cc100=optionalArguments["cc100"], maxSp=optionalArguments["maxSp"])
-        elif(command == "scramble"):
-            inst = CubeSimulator.getScramble()
-            resp = await self._createAndSendProgramByInstructions(inst, isDouble=optionalArguments["isDouble"], acc50=optionalArguments["acc50"], acc100=optionalArguments["acc100"], cc50=optionalArguments["cc50"], cc100=optionalArguments["cc100"], maxSp=optionalArguments["maxSp"])
-        else:
-            pattern = command
-            resp = await self._createAndSendProgramByPattern(pattern, isDouble=optionalArguments["isDouble"], acc50=optionalArguments["acc50"], acc100=optionalArguments["acc100"], cc50=optionalArguments["cc50"], cc100=optionalArguments["cc100"], maxSp=optionalArguments["maxSp"])
-        return resp
-
-    async def handlerGetRecords(self, request):
-        resp = web.json_response(
-            {
-                "records": self._db.records,
-            },
-            status=200
-        )
-        return resp
 
     async def _createAndSendProgramByInstructions(self, instructions: str, isDouble=True, acc50=42000, acc100=43000, cc50=19, cc100=20, maxSp=4000):
         if(CubeSimulator.validCheckOfInstructions(instructions) == False):
@@ -374,3 +167,12 @@ class Zauber:
                 self.setupSecondary()),
         else:
             print("No arduino connection.")
+
+def connect_and_update_sensor_data(app: web.Application):
+    arduinoServce = STMConnector()
+    app["secondaryArduino"] = 
+
+def run_server():
+    app = web.Application()
+    provide(app=app, value=ServerState)
+    app.on_startup()

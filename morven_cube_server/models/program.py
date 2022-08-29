@@ -6,6 +6,7 @@ class Program:
         self._id : str = idString
         self._startPattern: str = startPattern
         self._endPattern = CubeSimulator.simulate(startPattern, instructionsString)
+        self._is_manual: bool = False
     
     @property
     def endPattern(self):

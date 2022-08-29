@@ -9,29 +9,20 @@ from aiohttp import web
 
 class ServerStatus(Enum):
     NOTFETCHED = 0
-    IDLE = 1
-    RUN = 2
-    DONE = 3
-
+    READY = 1
 
 @dataclass
 class SensorData:
-    _temp1: int
-    _temp2: int
-    _temp3: int
-    _volt1: int
-    _volt2: int
-    _volt3: int
+    temp1: Optional[int]
+    temp2: Optional[int]
+    temp3: Optional[int]
+    volt1: Optional[int]
+    volt2: Optional[int]
+    volt3: Optional[int]
     
 @dataclass
 class ServerState:
     status: ServerStatus
-    cube_pattern: CubePattern
-    current_program: Optional[Program]
-
-    @classmethod
-    def of(cls, request: web.Request) -> ServerState:
-        state = request.app["serverState"]
-        if state == None or type(state) is not ServerState:
-            raise Exception("No ServerState stored.")
-        return state
+    cube_pattern: Optional[CubePattern]
+    sensor_data: SensorData
+    camera_port: int

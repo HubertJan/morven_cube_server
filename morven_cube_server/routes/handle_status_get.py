@@ -1,5 +1,5 @@
 from aiohttp import web
-from routes import routes
+from ..routes import routes
 from morven_cube_server.models.server_state import ServerState
 
 

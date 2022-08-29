@@ -1,8 +1,17 @@
-async def handlerGetPattern(self, request):
+
+from aiohttp import web
+from morven_cube_server.models.server_state import ServerState
+
+from morven_cube_server.provide import consume
+
+
+async def handler_pattern_get(self, request: web.Request):
+    state = consume(request.app, valueType=ServerState)
+    if state.cube_pattern is None:
+        raise Exception()
     resp = web.json_response(
         {
-            "currentPattern": self._cubePattern.pattern,
-            "futurePattern": self._futureCubePattern,
+            "currentPattern": state.cube_pattern
         },
         status=200
     )
@@ -14,7 +23,8 @@ def getOptionalArguemnts(self, optionalArguments: dict, data):
             optionalArguments[key] = data[key]
     return optionalArguments
     
-async def handlerPostPattern(self, request):
+async def handlerPatchPattern(self, request):
+
     if(self._status == "RUN"):
         return web.json_response(
             {

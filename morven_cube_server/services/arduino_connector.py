@@ -3,7 +3,7 @@ import serial
 import serial_asyncio as serialAsyncio
 import asyncio
 
-class ArduinoConnection:
+class ArduinoService:
     def __init__(self, port, baudrate ):
         self._port = port
         self._baudrate = baudrate
@@ -56,7 +56,7 @@ class ArduinoConnection:
         dataSenderList =  data.split(";", 1)
         sender = dataSenderList[0]
         if(sender == "debug"):
-            print (dataSenderList[1])
+            print(dataSenderList[1])
         elif(sender == "response"):
             self._receivedResponses.append(dataSenderList[1])
         elif(sender == "data"):

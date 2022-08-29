@@ -1,0 +1,14 @@
+async def handlerGetSensor(self, request):
+    resp = web.json_response(
+        {
+            "temp": self._sensorData["temp1"],
+            "temp2": self._sensorData["temp2"],
+            "temp3": self._sensorData["temp3"],
+            "volt1": self._sensorData["volt1"],
+            "volt2": self._sensorData["volt2"],
+            "volt3": self._sensorData["volt3"],
+            "c2": 4
+        },
+        status=200
+    )
+    return resp

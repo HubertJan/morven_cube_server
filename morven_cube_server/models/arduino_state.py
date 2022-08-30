@@ -2,7 +2,6 @@ from enum import Enum
 
 from morven_cube_server.models.program import Program
 
-
 class EndOfProgramReport:
     program: Program
     run_time: int

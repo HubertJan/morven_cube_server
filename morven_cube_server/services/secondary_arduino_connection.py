@@ -1,20 +1,25 @@
-from dataclasses import dataclass
-from typing import Optional
+from morven_cube_server.models.server_state import SensorData
+from morven_cube_server.services.arduino_connection import ArduinoConnection, connect_to_arduino
+from morven_cube_server.state_handler.notifier import Notifier
 
-from morven_cube_server.services.arduino_connection import ArduinoConnection
 
-@dataclass
-class SensorData:
-    temp1: Optional[int]
-    temp2: Optional[int]
-    temp3: Optional[int]
-    volt1: Optional[int]
-    volt2: Optional[int]
-    volt3: Optional[int]
+class SecondaryArduinoService(Notifier):
+    def __init__(self):
+        super().__init__()
 
-class SecondaryArduinoService:
-    def __init__(self, connection: ArduinoConnection):
-        self._connection = connection
+    async def connect(self, port: int, baudrate: int):
+        self.notify()
+        self._connection = await connect_to_arduino(baudrate=baudrate, port=port)
+        self._port = port
+        self._baudrate = baudrate
+
+    @property
+    def port(self):
+        return self._port
+    
+    @property
+    def baudrate(self):
+        return self._baudrate
 
     async def sendSetSensor(self): 
         return await self._connection.send_command("sensor", "no")

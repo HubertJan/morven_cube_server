@@ -7,9 +7,9 @@ class RubiksDatabase:
         self._data = None
         dirpath = Path(__file__).cwd().as_posix()
         self.dbFileURL = dirpath + databaseFileName
-        self._readFile()
+        self._read_file()
 
-    def addRecord(self, id, start_pattern, end_pattern, instructions, time, date):
+    def add_record(self, id, start_pattern, end_pattern, instructions, time, date):
         new_row = {'id': id,
                    'start_pattern': start_pattern,
                    'end_pattern': end_pattern,
@@ -18,12 +18,12 @@ class RubiksDatabase:
                    "date": date
                    }
         self._data = self._data.append(new_row, ignore_index=True)
-        self._saveFile()
+        self._save_file()
 
     @property
     def records(self):
         records = []
-        self._readFile()
+        self._read_file()
         for record in self._data.values:
             recordMap = {
                 "id": record[0],
@@ -36,14 +36,14 @@ class RubiksDatabase:
             records.append(recordMap)
         return records
     
-    def _saveFile(self):
+    def _save_file(self):
         try:
             self._data.to_csv(self.dbFileURL, encoding='utf-8', index=False)
         except:
             print("database.py: Error writing to the db file: " + self.dbFileURL)
 
 
-    def _readFile(self):
+    def _read_file(self):
         try:
             self._data: pd.DataFrame = pd.read_csv(self.dbFileURL)
 

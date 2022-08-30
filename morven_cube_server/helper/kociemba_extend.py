@@ -4,7 +4,7 @@ import kociemba as koc
 class Kociemba:
     @staticmethod
     def solve(*args):
-        if(args.__len__() == 1):
+        if (args.__len__() == 1):
             solution = koc.solve(args[0])
         else:
             solution = koc.solve(args[0], args[1])
@@ -20,7 +20,7 @@ class Kociemba:
                 ins = ins + "1"
             elif ins[1] == "'":
                 ins = ins[0] + "7"
-            if(isFirst):
+            if (isFirst):
                 isFirst = False
             else:
                 ins = " " + ins

@@ -1,18 +1,18 @@
 from dataclasses import dataclass
-from helper.cubeSimulator import CubeSimulator
 from morven_cube_server.models.program_settings import ArduinoConstants
+
 
 @dataclass(frozen=True)
 class Program:
     instructions: str
-    id: str 
+    id: str
     start_pattern: str
     end_pattern: str
     arduino_constants: ArduinoConstants
 
     @property
     def length(self):
-        if(self._instructions == ""):
+        if (self._instructions == ""):
             return 0
         return self._instructions.count(" ") + 1
 

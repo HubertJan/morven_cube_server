@@ -1,18 +1,18 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
+from dataclasses import dataclass, fields
 from enum import Enum
 from typing import AsyncGenerator, Optional
-from __future__ import annotations
-from morven_cube_server.models.primary_arduino_status import PrimaryArduinoStatus
 
 from morven_cube_server.models.cube_pattern import CubePattern
-from morven_cube_server.models.program import Program
-from aiohttp import web
 
 from morven_cube_server.models.program_settings import ArduinoConstants
+
 
 class ServerStatus(Enum):
     NOTFETCHED = 0
     READY = 1
+
 
 @dataclass
 class SensorData:
@@ -22,6 +22,7 @@ class SensorData:
     volt1: Optional[int]
     volt2: Optional[int]
     volt3: Optional[int]
+
 
 @dataclass
 class ServerState:

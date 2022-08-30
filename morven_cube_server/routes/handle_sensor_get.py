@@ -1,13 +1,17 @@
 from aiohttp import web
-from morven_cube_server import routes
+from morven_cube_server.routes.routes_object import routes
 from morven_cube_server.states.server_state import SensorData, ServerState
 from morven_cube_server.state_handler.provider import consume
 
+
 @routes.get('/sensor')
-async def handler_get_sensor(self, request: web.Request):
+async def handler_get_sensor(request: web.Request):
     state = consume(request.app, valueType=ServerState)
-    resp = _create_json_response_of_current_sensor_data(sensor_data=state.sensor_data)
+    resp = _create_json_response_of_current_sensor_data(
+        sensor_data=state.sensor_data
+    )
     return resp
+
 
 def _create_json_response_of_current_sensor_data(sensor_data: SensorData):
     return web.json_response(

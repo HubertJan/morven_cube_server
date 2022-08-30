@@ -3,7 +3,6 @@ from routes import routes
 from morven_cube_server.states.server_state import ServerState
 
 
-@routes.post('/program')
 async def handlerPostProgram(request: web.Request) -> web.Response:
     server_state = ServerState.of(request)
     if(server_state._status == "RUN"):

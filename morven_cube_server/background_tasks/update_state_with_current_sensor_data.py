@@ -5,7 +5,7 @@ from morven_cube_server.state_handler.refresh_on_update import refresh_on_update
 from morven_cube_server.states.server_state import SensorData, ServerState
 from morven_cube_server.state_handler.provider import consume
 
-from morven_cube_server.services.secondary_arduino_connection import SecondaryArduinoService
+from morven_cube_server.services.secondary_arduino_service import SecondaryArduinoService
 
 
 async def update_state_with_current_sensor_data(app: web.Application):

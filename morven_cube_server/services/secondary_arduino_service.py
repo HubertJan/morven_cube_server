@@ -2,14 +2,16 @@ from morven_cube_server.states.server_state import SensorData
 from morven_cube_server.services.arduino_connection import ArduinoConnection, connect_to_arduino
 from morven_cube_server.state_handler.notifier import Notifier
 
-
 class SecondaryArduinoService(Notifier):
     def __init__(self):
         super().__init__()
 
     async def connect(self, port: int, baudrate: int):
         self.notify()
-        self._connection = await connect_to_arduino(baudrate=baudrate, port=port)
+        self._connection = await connect_to_arduino(
+            baudrate=baudrate, 
+            port=port
+        )
         self._port = port
         self._baudrate = baudrate
 
@@ -21,9 +23,6 @@ class SecondaryArduinoService(Notifier):
     def baudrate(self):
         return self._baudrate
 
-    async def sendSetSensor(self): 
-        return await self._connection.send_command("sensor", "no")
-    
     async def sendLight(self, inst): 
         return await self._connection.send_command("sensor", inst)
 

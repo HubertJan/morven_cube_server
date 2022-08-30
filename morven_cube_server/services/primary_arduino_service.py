@@ -5,8 +5,6 @@ from morven_cube_server.models.running_program_report import RunningProgramRepor
 from morven_cube_server.states.server_state import SensorData
 from morven_cube_server.services.arduino_connection import ArduinoConnection, ArduinoService
 
-
-
 class PrimaryArduinoService:
     def __init__(self, connection: ArduinoConnection):
         self._connection = connection

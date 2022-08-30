@@ -14,23 +14,23 @@ class ServerStatus(Enum):
     READY = 1
 
 
-@dataclass
+@dataclass(frozen=True)
 class SensorData:
-    temp1: Optional[int]
-    temp2: Optional[int]
-    temp3: Optional[int]
-    volt1: Optional[int]
-    volt2: Optional[int]
-    volt3: Optional[int]
+    temp1: Optional[int] = None
+    temp2: Optional[int] = None
+    temp3: Optional[int] = None
+    volt1: Optional[int] = None
+    volt2: Optional[int] = None
+    volt3: Optional[int] = None
 
 
 @dataclass
 class ServerState:
-    status: ServerStatus
-    cube_pattern: Optional[CubePattern]
-    sensor_data: SensorData
     camera_port: int
     standard_arduino_constants: ArduinoConstants
+    status: ServerStatus = ServerStatus.NOTFETCHED
+    cube_pattern: Optional[CubePattern] = None
+    sensor_data: SensorData = SensorData()
 
     async def update_sensor_data_by_receiving_data(self, receiving_data: AsyncGenerator[SensorData, None]):
         async for data in receiving_data:

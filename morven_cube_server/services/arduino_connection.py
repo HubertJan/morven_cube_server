@@ -1,26 +1,29 @@
 from dataclasses import dataclass
 from enum import Enum
 import time
-from typing import Any, Coroutine
+from typing import Any, Awaitable, Coroutine
 import serial
 import serial_asyncio as serialAsyncio
 import asyncio
 
+
 class DataType(Enum):
-    UPDATE= 0
-    RESPONSE= 1
-    DEBUG= 2
+    UPDATE = 0
+    RESPONSE = 1
+    DEBUG = 2
+
 
 @dataclass
 class _Data:
     data_type: DataType
     message: str
 
+
 class ArduinoConnection:
-    def __init__(self, reader : asyncio.StreamReader, writer : asyncio.StreamWriter,):
+    def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter,):
         self._writer = writer
         self._reader = reader
-        self._current_fetching : Coroutine[Any, Any, _Data] | None = None
+        self._current_fetching: Coroutine[Any, Any, _Data] | None = None
         self._cached_data: dict[DataType, list[str]] = {
             DataType.DEBUG: [],
             DataType.RESPONSE: [],
@@ -53,7 +56,7 @@ class ArduinoConnection:
                 self._cache(fetched_data)
                 continue
             return fetched_data.message
-            
+
     def _cache(self, data: _Data):
         self._cached_data[data.data_type].append(data.message)
 
@@ -67,37 +70,37 @@ class ArduinoConnection:
         rawData = await self._reader.readuntil(b'\n')
         dataString = str(rawData)
         data = dataString[2:len(dataString)-5]
-        data_sender_list =  data.split(";", 1)
+        data_sender_list = data.split(";", 1)
         channel = data_sender_list[0]
         message = data_sender_list[1]
-        if(channel == "debug"):
-            return _Data(data_type=DataType.DEBUG, message=message)            
-        elif(channel == "response"):
-            return _Data(data_type=DataType.RESPONSE, message=message)      
-        elif(channel == "data"):
-            return _Data(data_type=DataType.UPDATE, message=message)      
+        if (channel == "debug"):
+            return _Data(data_type=DataType.DEBUG, message=message)
+        elif (channel == "response"):
+            return _Data(data_type=DataType.RESPONSE, message=message)
+        elif (channel == "data"):
+            return _Data(data_type=DataType.UPDATE, message=message)
         raise Exception("Invalid channel")
-    
-    async def send_command(self, command, *argv):
+
+    async def send_command(self, command, *argv) -> Awaitable[None]:
         commandString = command
         for arg in argv:
             if arg is not str:
                 arg = str(arg)
-            commandString = commandString + ' "'  + arg + '"'
+            commandString = commandString + ' "' + arg + '"'
         commandString = commandString + "\n"
         print("Command:" + commandString)
         self._writer.write(commandString.encode())
         responseId = await self.getResponse("TEST")
         data = self._receivedResponses.pop(responseId)
         if (data == ""):
-            return
-        return self._response_string_to_dic(data) 
-    
+            return None
+        value = self._response_string_to_dic(data)
+
     def _response_string_to_dic(self, response):
         respValueList = response.split(";")
         valuesMap = {}
         for value in respValueList:
-            if(value!= ""):    
+            if (value != ""):
                 valueList = value.split("=")
                 valuesMap[valueList[0]] = valueList[1]
         return valuesMap
@@ -106,8 +109,8 @@ class ArduinoConnection:
 async def connect_to_arduino(port: int, baudrate: int) -> ArduinoConnection:
     try:
         streams = await serialAsyncio.open_serial_connection(url=port, baudrate=baudrate)
-        reader : asyncio.StreamReader = streams[0]
-        writer : asyncio.StreamWriter = streams[1]
+        reader: asyncio.StreamReader = streams[0]
+        writer: asyncio.StreamWriter = streams[1]
         writer.write(b'foo\n')
         await asyncio.sleep(0.5)
         await reader.readuntil(b'\n')

@@ -12,14 +12,15 @@ from morven_cube_server.services.secondary_arduino_service import SecondaryArdui
 from routes import *
 
 
-def run_server():
+def run_server() -> None:
     app = web.Application()
     app.add_routes(routes=routes)
 
     provide(app=app, value=PrimaryArduinoService(),
             valueType=PrimaryArduinoService)
-    provide(app=app, value=SecondaryArduinoService(),
+    provide(app=app, value="",
             valueType=SecondaryArduinoService)
+
     provide(app=app, value=ServerState(), valueType=ServerState)
     provide(app=app, value=PrimaryArduinoState(),
             valueType=PrimaryArduinoState)

@@ -11,10 +11,11 @@ from morven_cube_server.state_handler.notifier import Notifier
 
 from morven_cube_server.state_handler.provider import consume
 
-async def handle_primary_arduino_updates(app: web.Application):
+
+async def handle_primary_arduino_updates(app: web.Application) -> None:
     service = consume(app, valueType=PrimaryArduinoService)
     arduino_state = consume(app, valueType=PrimaryArduinoState)
-    
+
     async def create_task():
         async for update in service.handle_received_updates():
             if update is EndOfProgramReport:
@@ -24,6 +25,6 @@ async def handle_primary_arduino_updates(app: web.Application):
                 arduino_state.last_instruction_id = update.latest_finished_instruction_id
                 arduino_state.runtime = update.run_time
     await refresh_on_update(
-        notifier=service, 
-        task_func= create_task
+        notifier=service,
+        create_coroutine=create_task()
     )

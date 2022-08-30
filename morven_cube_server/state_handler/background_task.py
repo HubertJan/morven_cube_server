@@ -3,7 +3,7 @@ from typing import Awaitable, Callable, Coroutine, Optional
 from aiohttp import web
 
 
-def start_background_task(app: web.Application, task_func: Callable[[], Coroutine], on_stop: Optional[Callable[[asyncio.Task], Awaitable[None]]]):
+def add_background_task(app: web.Application, task_func: Callable[[], Coroutine], on_stop: Optional[Callable[[asyncio.Task], Awaitable[None]]]):
     async def run_background(app: web.Application):
         task = asyncio.create_task(task_func())
         yield

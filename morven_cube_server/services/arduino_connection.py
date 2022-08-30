@@ -81,6 +81,8 @@ class ArduinoConnection:
     async def send_command(self, command, *argv):
         commandString = command
         for arg in argv:
+            if arg is not str:
+                arg = str(arg)
             commandString = commandString + ' "'  + arg + '"'
         commandString = commandString + "\n"
         print("Command:" + commandString)

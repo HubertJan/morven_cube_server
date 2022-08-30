@@ -1,29 +1,15 @@
+from dataclasses import dataclass
 from helper.cubeSimulator import CubeSimulator
+from morven_cube_server.models.program_settings import ArduinoConstants
 
+@dataclass(frozen=True)
 class Program:
-    def __init__(self, instructionsString, idString, startPattern):
-        self._instructions : str = instructionsString
-        self._id : str = idString
-        self._startPattern: str = startPattern
-        self._endPattern = CubeSimulator.simulate(startPattern, instructionsString)
-        self._is_manual: bool = False
-    
-    @property
-    def endPattern(self):
-        return self._endPattern
+    instructions: str
+    id: str 
+    start_pattern: str
+    end_pattern: str
+    arduino_constants: ArduinoConstants
 
-    @property
-    def startPattern(self):
-        return self._startPattern
-
-    @property
-    def instructions(self):
-        return self._instructions
-
-    @property
-    def id(self):
-        return self._id
-    
     @property
     def length(self):
         if(self._instructions == ""):

@@ -122,7 +122,7 @@ class CubeSimulator:
         return True
     
     @staticmethod
-    def getScramble():
+    def generate_scramble():
         return CubeSimulator.toFormat(scrambler333.get_WCA_scramble())
 
     @staticmethod
@@ -143,7 +143,7 @@ class CubeSimulator:
         return improvedSolution    
 
     @staticmethod
-    def validCheckOfPattern(patternString):
+    def validate_pattern(patternString):
         pattern = list(patternString)
         colorCounters = {}
         instDic = CubeSimulator.instructionDic

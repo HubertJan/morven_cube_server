@@ -1,4 +1,4 @@
-from morven_cube_server.models.server_state import SensorData
+from morven_cube_server.states.server_state import SensorData
 from morven_cube_server.services.arduino_connection import ArduinoConnection, connect_to_arduino
 from morven_cube_server.state_handler.notifier import Notifier
 

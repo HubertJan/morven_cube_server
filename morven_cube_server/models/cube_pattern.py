@@ -5,8 +5,6 @@ class CubePattern:
     def __init__(self, cubePatternString: str):
         self.pattern = cubePatternString
 
-    
-
     def imposeInstructions(self, instructionString):
         self.pattern  = CubeSimulator.simulate(self.pattern, instructionString)
 

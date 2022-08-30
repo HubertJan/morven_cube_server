@@ -1,6 +1,6 @@
 from aiohttp import web
 from routes import routes
-from morven_cube_server.models.server_state import ServerState
+from morven_cube_server.states.server_state import ServerState
 
 
 @routes.post('/program')

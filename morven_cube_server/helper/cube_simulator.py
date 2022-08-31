@@ -1,5 +1,5 @@
 from morven_cube_server.helper.kociemba_extend import Kociemba as kociemba
-from pyTwistyScrambler import scrambler333
+# from pyTwistyScrambler import scrambler333
 
 
 class CubeSimulator:
@@ -57,62 +57,62 @@ class CubeSimulator:
     }
 
     @staticmethod
-    def simulate(patternString: str, instructionsString: str):
+    def simulate(patternString: str, instructionsString: str) -> str:
         instructions = list(instructionsString.split(" "))
-        pattern = list(patternString)
+        pattern = patternString
         if instructions.__len__() == 0 or instructions[0] == "":
             return patternString
         for instruction in instructions:
             for instructionRef in CubeSimulator.instructionDic:
                 if (instruction[0] == instructionRef):
                     if (instruction[1] == "1"):
-                        pattern = CubeSimulator._swapCharacter(
+                        pattern = CubeSimulator._swap_character(
                             CubeSimulator.instructionDic[instructionRef], pattern, True)
                     elif (instruction[1] == "7"):
-                        pattern = CubeSimulator._swapCharacter(
+                        pattern = CubeSimulator._swap_character(
                             CubeSimulator.instructionDic[instructionRef], pattern, clockwise=False)
                     elif (instruction[1] == "2"):
-                        pattern = CubeSimulator._swapCharacter(
-                            CubeSimulator.instructionDic[instructionRef], pattern, rotation180=True)
+                        pattern = CubeSimulator._swap_character(
+                            CubeSimulator.instructionDic[instructionRef], pattern, is_rotation_180=True)
                     break
         returnPattern = "".join(pattern)
         return returnPattern
 
     @staticmethod
-    def _swapCharacter(toChangeRows, pattern, clockwise=True, rotation180=False):
-        rowInteger = toChangeRows[0]
-        cubeCircle = toChangeRows[1]
-        if rotation180:
+    def _swap_character(to_change_rows: list[list[int]], pattern: str, clockwise: bool = True, is_rotation_180: bool = False) -> str:
+        row_integer = to_change_rows[0]
+        cube_circle = to_change_rows[1]
+        if is_rotation_180:
             x = 2
         else:
             if (clockwise):
                 x = 1
             else:
                 x = -1
-        patternAsList = list(pattern)
-        newPatternAsList = list(pattern)
+        pattern_as_list = list(pattern)
+        new_pattern_as_list = list(pattern)
 
-        for i in range(0, rowInteger.__len__()):
-            if i + 3 * x >= rowInteger.__len__():
-                index = rowInteger[i + 3 * x - rowInteger.__len__()]
+        for i in range(0, row_integer.__len__()):
+            if i + 3 * x >= row_integer.__len__():
+                index = row_integer[i + 3 * x - row_integer.__len__()]
             elif i + 3 * x < 0:
-                index = rowInteger[i + 3 * x + rowInteger.__len__()]
+                index = row_integer[i + 3 * x + row_integer.__len__()]
             else:
-                index = rowInteger[i + 3 * x]
-            newPatternAsList[rowInteger[i]] = patternAsList[index]
-        for i in range(0, cubeCircle.__len__()):
+                index = row_integer[i + 3 * x]
+            new_pattern_as_list[row_integer[i]] = pattern_as_list[index]
+        for i in range(0, cube_circle.__len__()):
             if i - 2 * x < 0:
-                index = cubeCircle[i - 2 * x + cubeCircle.__len__()]
-            elif i - 2 * x >= cubeCircle.__len__():
-                index = cubeCircle[i - 2 * x - cubeCircle.__len__()]
+                index = cube_circle[i - 2 * x + cube_circle.__len__()]
+            elif i - 2 * x >= cube_circle.__len__():
+                index = cube_circle[i - 2 * x - cube_circle.__len__()]
             else:
-                index = cubeCircle[i - 2 * x]
-            newPatternAsList[cubeCircle[i]] = patternAsList[index]
-        return ''.join(newPatternAsList)
+                index = cube_circle[i - 2 * x]
+            new_pattern_as_list[cube_circle[i]] = pattern_as_list[index]
+        return ''.join(new_pattern_as_list)
 
     @staticmethod
-    def validCheckOfInstructions(instructionsString):
-        instructions = list(instructionsString.split(" "))
+    def validate_instructions(instructions_string: str) -> bool:
+        instructions = list(instructions_string.split(" "))
         for instruction in instructions:
             isValid = False
             for instructionRef in CubeSimulator.instructionDic:
@@ -124,10 +124,10 @@ class CubeSimulator:
 
     @staticmethod
     def generate_scramble() -> str:
-        return CubeSimulator.toFormat("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")
+        return CubeSimulator.to_format("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")
 
     @staticmethod
-    def toFormat(solution: str) -> str:
+    def to_format(solution: str) -> str:
         solList = list(solution.split(" "))
         improvedSolution = ""
         isFirst = True
@@ -166,7 +166,7 @@ class CubeSimulator:
         return True
 
     @staticmethod
-    def _printOneCube(v):
+    def _print_one_cube(v) -> None:   # type: ignore
         print("             |************|")
         for index in range(0, 3):
             i = index * 3
@@ -174,7 +174,7 @@ class CubeSimulator:
             print("             |************|")
 
     @staticmethod
-    def _print4Cubes(c1, c2, c3, c4):
+    def _print_four_cubes(c1, c2, c3, c4) -> None:  # type: ignore
         print(" ************|************|************|************")
         for index in range(0, 3):
             i = index * 3
@@ -182,7 +182,8 @@ class CubeSimulator:
             print(" ************|************|************|************")
 
     @staticmethod
-    def printRubiksCube(pa):
-        _printOneCube(pa[0:9])
-        _print4Cubes(pa[36:45], pa[18:27], pa[9:18], pa[45:54])
-        _printOneCube(pa[27:36])
+    def print_rubiks_cube(pa):   # type: ignore
+        CubeSimulator._print_one_cube(pa[0:9])
+        CubeSimulator._print_four_cubes(
+            pa[36:45], pa[18:27], pa[9:18], pa[45:54])
+        CubeSimulator._print_one_cube(pa[27:36])

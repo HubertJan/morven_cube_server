@@ -5,7 +5,7 @@ from aiohttp import web
 import pytest
 
 from morven_cube_server.all_routes import routes
-from morven_cube_server.helper.cubeSimulator import CubeSimulator
+from morven_cube_server.helper.cube_simulator import CubeSimulator
 from morven_cube_server.models.cube_pattern import CubePattern
 
 from morven_cube_server.models.program_settings import ArduinoConstants
@@ -30,7 +30,7 @@ def create_app():
     provide(app=app, value=ServerState(
         camera_port=0,
         cube_pattern=CubePattern(
-            cubePatternString=CubeSimulator.toFormat("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")),
+            cubePatternString=CubeSimulator.to_format("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")),
         standard_arduino_constants=ArduinoConstants(
             acc100=50,
             acc50=50,

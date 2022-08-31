@@ -8,10 +8,10 @@ class Kociemba:
             solution = koc.solve(args[0])
         else:
             solution = koc.solve(args[0], args[1])
-        return Kociemba.toArduinoFormat(solution)
+        return Kociemba.to_arduino_format(solution)
 
     @staticmethod
-    def toArduinoFormat(solution) -> str:  # type: ignore
+    def to_arduino_format(solution) -> str:  # type: ignore
         solList = list(solution.split(" "))
         improvedSolution = ""
         isFirst = True

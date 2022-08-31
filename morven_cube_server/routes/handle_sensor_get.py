@@ -24,7 +24,6 @@ def _create_json_response_of_current_sensor_data(sensor_data: SensorData) -> web
             "volt1": sensor_data.volt1,
             "volt2": sensor_data.volt2,
             "volt3": sensor_data.volt3,
-            "c2": 3,
         },
         status=200
     )

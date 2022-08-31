@@ -3,7 +3,7 @@ import json
 from typing import Any
 from aiohttp import web
 from morven_cube_server.routes.routes_object import routes
-from morven_cube_server.helper.cubeSimulator import CubeSimulator
+from morven_cube_server.helper.cube_simulator import CubeSimulator
 from morven_cube_server.helper.kociemba_extend import Kociemba
 from morven_cube_server.models.primary_arduino_status import PrimaryArduinoStatus
 from morven_cube_server.models.program import Program
@@ -26,16 +26,16 @@ def _update_arduino_constants_by_query(constants: ArduinoConstants, query: Any) 
 
 
 def _extract_pattern(request: web.Request) -> str:
-    new_pattern = request.match_info["pattern"]
-    match new_pattern:
+    pattern = request.match_info["pattern"]
+    match pattern:
         case "solve":
-            new_pattern = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+            pattern = "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
         case "scramble":
-            new_pattern = CubeSimulator.generate_scramble()
+            pattern = CubeSimulator.generate_scramble()
         case _:
-            if CubeSimulator.validate_pattern(new_pattern) == False:
+            if CubeSimulator.validate_pattern(pattern) == False:
                 raise Exception()
-    return new_pattern
+    return pattern
 
 
 @routes.patch("/pattern/{pattern}")

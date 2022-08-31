@@ -3,7 +3,7 @@ import kociemba as koc
 
 class Kociemba:
     @staticmethod
-    def solve(*args):
+    def solve(*args) -> str:  # type: ignore
         if (args.__len__() == 1):
             solution = koc.solve(args[0])
         else:
@@ -11,7 +11,7 @@ class Kociemba:
         return Kociemba.toArduinoFormat(solution)
 
     @staticmethod
-    def toArduinoFormat(solution):
+    def toArduinoFormat(solution) -> str:  # type: ignore
         solList = list(solution.split(" "))
         improvedSolution = ""
         isFirst = True

@@ -13,7 +13,7 @@ class ArduinoConstants:
     max_speed: int
     is_double: bool
 
-    def update(self, acc50: Optional[int], acc100: Optional[int], cc50: Optional[int], cc100: Optional[int], max_speed: Optional[int], is_double: Optional[bool]) -> ArduinoConstants:
+    def update(self, acc50: Optional[int] = None, acc100: Optional[int] = None, cc50: Optional[int] = None, cc100: Optional[int] = None, max_speed: Optional[int] = None, is_double: Optional[bool] = None) -> ArduinoConstants:
         return ArduinoConstants(
             acc50=acc50 if acc50 is not None else self.acc50,
             acc100=acc100 if acc100 is not None else self.acc100,

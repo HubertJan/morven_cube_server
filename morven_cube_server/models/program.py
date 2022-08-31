@@ -1,24 +1,28 @@
 from dataclasses import dataclass
 from morven_cube_server.models.program_settings import ArduinoConstants
+from morven_cube_server.helper.cubeSimulator import CubeSimulator
 
 
 @dataclass(frozen=True)
 class Program:
     instructions: str
-    id: str
+    id: int
     start_pattern: str
-    end_pattern: str
     arduino_constants: ArduinoConstants
 
     @property
-    def length(self):
-        if (self._instructions == ""):
-            return 0
-        return self._instructions.count(" ") + 1
+    def end_pattern(self) -> str:
+        return CubeSimulator.simulate(self.start_pattern, instructionsString=self.instructions)
 
     @property
-    def reversedProgram(self):
-        reversedProgram = list(self._instructions.split(" "))
+    def length(self) -> int:
+        if (self.instructions == ""):
+            return 0
+        return self.instructions.count(" ") + 1
+
+    @property
+    def reversedProgram(self) -> list[str]:
+        reversedProgram = list(self.instructions.split(" "))
         reversedProgram.reverse()
         for i, instruction in enumerate(reversedProgram):
             if len(reversedProgram[i]) == 1:

@@ -2,11 +2,13 @@ from typing import AsyncGenerator, AsyncIterator, Awaitable
 from morven_cube_server.models.end_of_program_report import EndOfProgramReport
 from morven_cube_server.models.program import Program
 from morven_cube_server.models.running_program_report import RunningProgramReport
-from morven_cube_server.services.interface_primary_arduino_service import IPrimaryArduinoService
+from morven_cube_server.services.primary_service import PrimaryService
 from morven_cube_server.states.server_state import SensorData
+from morven_cube_server.services.arduino_connection import ArduinoConnection
+from morven_cube_server.state_handler.notifier import Notifier
 
 
-class PrimaryArduinoService(IPrimaryArduinoService):
+class PrimaryArduinoService(Notifier):
     def __init__(self, connection: ArduinoConnection):
         self._connection = connection
 
@@ -26,11 +28,11 @@ class PrimaryArduinoService(IPrimaryArduinoService):
         return None
 
     async def pause(self) -> None:
-        await self.connection.send_command("pause true")
+        await self._connection.send_command("pause true")
         return None
 
     async def unpause(self) -> None:
-        await self.connection.send_command("pause false")
+        await self._connection.send_command("pause false")
         return None
 
     async def handle_received_updates(self) -> AsyncIterator[EndOfProgramReport | RunningProgramReport]:

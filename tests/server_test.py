@@ -1,23 +1,36 @@
-from xmlrpc.client import Server
-import pytest
+
+import asyncio
+import json
 from aiohttp import web
+import pytest
 
 from morven_cube_server.all_routes import routes
-from morven_cube_server.models.primary_arduino_status import PrimaryArduinoStatus
+from morven_cube_server.helper.cubeSimulator import CubeSimulator
+from morven_cube_server.models.cube_pattern import CubePattern
+
 from morven_cube_server.models.program_settings import ArduinoConstants
-from morven_cube_server.services.interface_primary_arduino_service import IPrimaryArduinoService
+from morven_cube_server.services.primary_service import PrimaryService
+from morven_cube_server.services.rubiks_database_service import RubiksDatabaseService
+from morven_cube_server.services.secondary_service import SecondaryService
 from morven_cube_server.state_handler.provider import provide
 from morven_cube_server.states.primary_arduino_state import PrimaryArduinoState
-from morven_cube_server.states.server_state import SensorData, ServerState, ServerStatus
+from morven_cube_server.states.server_state import ServerState
+from morven_cube_server.state_handler.background_task import add_background_task
+from morven_cube_server.background_tasks.connect_to_arduinos import connect_to_arduinos
+from morven_cube_server.background_tasks.update_state_with_current_sensor_data import update_state_with_current_sensor_data
+from morven_cube_server.background_tasks.handle_primary_updates import handle_primary_updates
+
 from tests.dummies.dummy_primary_arduino_service import DummyPrimaryArduinoService
+from tests.dummies.dummy_secondary_arduino_service import DummySecondaryArduinoService
 
 
-@pytest.fixture  # type: ignore
-def cli(loop, aiohttp_client):  # type: ignore
+def create_app():
     app = web.Application()
     app.add_routes(routes)
     provide(app=app, value=ServerState(
         camera_port=0,
+        cube_pattern=CubePattern(
+            cubePatternString=CubeSimulator.toFormat("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")),
         standard_arduino_constants=ArduinoConstants(
             acc100=50,
             acc50=50,
@@ -27,16 +40,82 @@ def cli(loop, aiohttp_client):  # type: ignore
             max_speed=30
         ),
     ), valueType=ServerState)
-    provide(app=app, value="yo",
-            valueType=IPrimaryArduinoService)
+    provide(app=app,
+            value=DummyPrimaryArduinoService(),
+            valueType=PrimaryService)
     provide(app=app,
             value=PrimaryArduinoState(),
             valueType=PrimaryArduinoState
             )
+    provide(app=app,
+            value=DummySecondaryArduinoService(),
+            valueType=SecondaryService)
+    provide(app=app,
+            value=RubiksDatabaseService(database_file_name="db_cube.csv"),
+            valueType=RubiksDatabaseService
+            )
 
-    return loop.run_until_complete(aiohttp_client(app))  # type: ignore
+    add_background_task(
+        app=app,
+        task_func=connect_to_arduinos
+    )
+    add_background_task(
+        app=app,
+        task_func=update_state_with_current_sensor_data,
+    )
+    add_background_task(
+        app=app,
+        task_func=handle_primary_updates
+    )
+
+    return app
 
 
-async def test_get_sensor(cli) -> None:  # type: ignore
-    resp = await cli.get('/sensor')  # type: ignore
-    assert resp.status == 200  # type: ignore
+@pytest.mark.asyncio
+async def test_sensor_update(aiohttp_client):
+    client = await aiohttp_client(create_app())
+    await asyncio.sleep(5)
+    resp = await client.get('/sensor')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["temp2"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_pattern_patch(aiohttp_client):
+    client = await aiohttp_client(create_app())
+    await asyncio.sleep(10)
+    resp = await client.patch('/pattern/solve')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["program_id"] == 0
+    await asyncio.sleep(5)
+    resp = await client.get('/pattern')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["pattern"] == "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+
+
+@pytest.mark.asyncio
+async def test_pattern_get(aiohttp_client):
+    client = await aiohttp_client(create_app())
+    await asyncio.sleep(10)
+    resp = await client.get('/pattern')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["pattern"] == "DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD"
+
+
+@pytest.mark.asyncio
+async def test_verified_pattern_patch(aiohttp_client):
+    client = await aiohttp_client(create_app())
+    await asyncio.sleep(10)
+    resp = await client.patch('/verifiedPattern/FLBUULFFLFDURRDBUBUUDDFFBRDDBLRDRFLLRLRULFUDRRBDBBBUFL')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["pattern"] == "FLBUULFFLFDURRDBUBUUDDFFBRDDBLRDRFLLRLRULFUDRRBDBBBUFL"

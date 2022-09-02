@@ -3,7 +3,7 @@ from morven_cube_server.all_routes import routes
 from morven_cube_server.background_tasks.update_state_with_current_sensor_data import update_state_with_current_sensor_data
 from morven_cube_server.background_tasks.connect_to_arduinos import connect_to_arduinos
 from morven_cube_server.models.program_settings import ArduinoConstants
-from morven_cube_server.states.primary_arduino_state import PrimaryServiceState:
+from morven_cube_server.states.primary_arduino_state import PrimaryServiceState
 from morven_cube_server.states.server_state import ServerState
 from morven_cube_server.state_handler.background_task import add_background_task
 from morven_cube_server.state_handler.provider import provide

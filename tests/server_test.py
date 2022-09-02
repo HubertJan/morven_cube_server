@@ -13,7 +13,7 @@ from morven_cube_server.services.primary_service import PrimaryService
 from morven_cube_server.services.rubiks_database_service import RubiksDatabaseService
 from morven_cube_server.services.secondary_service import SecondaryService
 from morven_cube_server.state_handler.provider import provide
-from morven_cube_server.states.primary_arduino_state import PrimaryServiceState:
+from morven_cube_server.states.primary_arduino_state import PrimaryServiceState
 from morven_cube_server.states.server_state import ServerState
 from morven_cube_server.state_handler.background_task import add_background_task
 from morven_cube_server.background_tasks.connect_to_arduinos import connect_to_arduinos
@@ -44,8 +44,8 @@ def create_app():
             value=DummyPrimaryArduinoService(),
             valueType=PrimaryService)
     provide(app=app,
-            value=PrimaryServiceState: (),
-            valueType=PrimaryServiceState:)
+            value=PrimaryServiceState(),
+            valueType=PrimaryServiceState)
     provide(app=app,
             value=DummySecondaryArduinoService(),
             valueType=SecondaryService)

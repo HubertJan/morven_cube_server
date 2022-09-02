@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from morven_cube_server.models.program_settings import ArduinoConstants
-from morven_cube_server.helper.cubeSimulator import CubeSimulator
+from morven_cube_server.helper.cube_simulator import CubeSimulator
 
 
 @dataclass(frozen=True)

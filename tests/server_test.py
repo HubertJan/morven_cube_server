@@ -13,7 +13,7 @@ from morven_cube_server.services.primary_service import PrimaryService
 from morven_cube_server.services.rubiks_database_service import RubiksDatabaseService
 from morven_cube_server.services.secondary_service import SecondaryService
 from morven_cube_server.state_handler.provider import provide
-from morven_cube_server.states.primary_arduino_state import PrimaryArduinoState
+from morven_cube_server.states.primary_arduino_state import PrimaryServiceState:
 from morven_cube_server.states.server_state import ServerState
 from morven_cube_server.state_handler.background_task import add_background_task
 from morven_cube_server.background_tasks.connect_to_arduinos import connect_to_arduinos
@@ -30,7 +30,7 @@ def create_app():
     provide(app=app, value=ServerState(
         camera_port=0,
         cube_pattern=CubePattern(
-            cubePatternString=CubeSimulator.to_format("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")),
+            patttern=CubeSimulator.to_format("DRLUUBFBRBLURRLRUBLRDDFDLFUFUFFDBRDUBRUFLLFDDBFLUBLRBD")),
         standard_arduino_constants=ArduinoConstants(
             acc100=50,
             acc50=50,
@@ -44,9 +44,8 @@ def create_app():
             value=DummyPrimaryArduinoService(),
             valueType=PrimaryService)
     provide(app=app,
-            value=PrimaryArduinoState(),
-            valueType=PrimaryArduinoState
-            )
+            value=PrimaryServiceState: (),
+            valueType=PrimaryServiceState:)
     provide(app=app,
             value=DummySecondaryArduinoService(),
             valueType=SecondaryService)
@@ -97,6 +96,23 @@ async def test_pattern_patch(aiohttp_client):
     text = await resp.text()
     data = json.loads(text)
     assert data["pattern"] == "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+
+
+@pytest.mark.asyncio
+async def test_runthrough_latest_get(aiohttp_client):
+    client = await aiohttp_client(create_app())
+    await asyncio.sleep(10)
+    resp = await client.patch('/pattern/solve')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["program_id"] == 0
+    await asyncio.sleep(5)
+    resp = await client.get('/runthroughs/latest')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["id"]
 
 
 @pytest.mark.asyncio

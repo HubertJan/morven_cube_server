@@ -24,16 +24,13 @@ class LocalFileDatabase:
         if self._data is None:
             raise Exception()
         self._read_file()
+        record_map = {}
         for record in self._data.values:
-            recordMap = {
-                "id": record[0],
-                "start_pattern": record[1],
-                "end_pattern": record[2],
-                "instructions": record[3],
-                "time": record[4],
-                "date": record[5],
-            }
-            records.append(recordMap)
+            index = 0
+            for key in self._data.keys():
+                record_map[key] = record[index]
+                index += 1
+            records.append(record_map)
         return records
 
     def _save_file(self) -> None:

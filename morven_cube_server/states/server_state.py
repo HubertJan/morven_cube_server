@@ -9,11 +9,6 @@ from morven_cube_server.models.cube_pattern import CubePattern
 from morven_cube_server.models.program_settings import ArduinoConstants
 
 
-class ServerStatus(Enum):
-    NOTFETCHED = 0
-    READY = 1
-
-
 @dataclass(frozen=True)
 class SensorData:
     temp1: Optional[int] = None
@@ -44,7 +39,6 @@ class SensorData:
 class ServerState:
     camera_port: int
     standard_arduino_constants: ArduinoConstants
-    status: ServerStatus = ServerStatus.NOTFETCHED
     cube_pattern: Optional[CubePattern] = None
     sensor_data: SensorData = SensorData()
 

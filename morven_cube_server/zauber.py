@@ -2,12 +2,13 @@ from aiohttp import web
 from morven_cube_server.all_routes import routes
 from morven_cube_server.background_tasks.update_state_with_current_sensor_data import update_state_with_current_sensor_data
 from morven_cube_server.background_tasks.connect_to_arduinos import connect_to_arduinos
-from morven_cube_server.states.primary_arduino_state import PrimaryArduinoState
+from morven_cube_server.models.program_settings import ArduinoConstants
+from morven_cube_server.states.primary_arduino_state import PrimaryServiceState:
 from morven_cube_server.states.server_state import ServerState
 from morven_cube_server.state_handler.background_task import add_background_task
 from morven_cube_server.state_handler.provider import provide
 
-from morven_cube_server.services.primary_arduino_service import PrimaryArduinoService
+from morven_cube_server.services.primary_service_state import PrimaryArduinoService
 from morven_cube_server.services.secondary_arduino_service import SecondaryArduinoService
 from routes import *
 
@@ -21,9 +22,19 @@ def run_server() -> None:
     provide(app=app, value="",
             valueType=SecondaryArduinoService)
 
-    provide(app=app, value=ServerState(), valueType=ServerState)
-    provide(app=app, value=PrimaryArduinoState(),
-            valueType=PrimaryArduinoState)
+    provide(app=app, value=ServerState(
+        camera_port=6,
+        standard_arduino_constants=ArduinoConstants(
+            acc100=30,
+            acc50=50,
+            cc100=100,
+            cc50=50,
+            is_double=True,
+            max_speed=50,
+        )
+    ), valueType=ServerState)
+    provide(app=app, value=PrimaryServiceState(),
+            valueType=PrimaryServiceState)
 
     add_background_task(
         app=app,

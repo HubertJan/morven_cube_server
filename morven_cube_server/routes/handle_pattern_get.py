@@ -12,7 +12,7 @@ async def handler_pattern_get(request: web.Request) -> web.Response:
         raise Exception()
     resp = web.json_response(
         {
-            "pattern": state.cube_pattern.pattern
+            "pattern": str(state.cube_pattern)
         },
         status=200
     )

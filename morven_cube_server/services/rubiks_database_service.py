@@ -1,7 +1,7 @@
 import re
 from morven_cube_server.models.end_of_program_report import EndOfProgramReport
 from morven_cube_server.models.runthrough import Runthrough
-from morven_cube_server.services.database import LocalFileDatabase
+from morven_cube_server.services.api.database import LocalFileDatabase
 
 
 class RubiksDatabaseService:
@@ -19,6 +19,21 @@ class RubiksDatabaseService:
         self._database.add_record(data)
 
     @property
-    def runthroughs(self) -> list[dict[str, str]]:
+    def runthroughs(self) -> list[Runthrough]:
         records = self._database.records
-        return records
+        runs = []
+        for record in records:
+            runs.append(Runthrough(
+                id=int(record["id"]),
+                instructions=record["instructions"],
+                start_pattern=record["start_pattern"],
+                runtime=int(record["runtime"]),
+                date=record["date"],
+                acc50=int(record["acc50"]),
+                acc100=int(record["acc100"]),
+                cc50=int(record["cc50"]),
+                cc100=int(record["cc100"]),
+                is_double=bool(record["is_double"]),
+                max_speed=int(record["max_speed"])
+            ))
+        return runs

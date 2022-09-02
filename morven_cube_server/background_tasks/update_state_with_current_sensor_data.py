@@ -2,7 +2,7 @@ import imp
 from typing import Protocol
 from aiohttp import web
 
-from morven_cube_server.services.primary_arduino_service import PrimaryArduinoService
+from morven_cube_server.services.primary_service_state import PrimaryArduinoService
 from morven_cube_server.state_handler.notifier import SupportsAddListener
 from morven_cube_server.state_handler.refresh_on_update import refresh_on_update
 from morven_cube_server.states.server_state import SensorData, ServerState

@@ -112,7 +112,7 @@ async def test_runthrough_latest_get(aiohttp_client):
     assert resp.status == 200
     text = await resp.text()
     data = json.loads(text)
-    assert data["id"]
+    assert data["id"] == 0
 
 
 @pytest.mark.asyncio

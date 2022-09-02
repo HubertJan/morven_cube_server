@@ -15,7 +15,7 @@ async def handle_possible_pattern_get(request: web.Request) -> web.Response:
     state.cube_pattern = CubePattern(verified_pattern)
     return web.json_response(
         data={
-            "pattern": state.cube_pattern.pattern
+            "pattern": str(state.cube_pattern)
         },
         status=200
     )

@@ -4,5 +4,6 @@ from morven_cube_server.models.program import Program
 
 @dataclass(frozen=True)
 class EndOfProgramReport:
-    program: Program
+    instructions: str
+    program_id: str
     runtime: int

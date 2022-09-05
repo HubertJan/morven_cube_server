@@ -47,7 +47,7 @@ class ArduinoConnection:
             data_from_cache = self._handle_data_from_cache(data_type)
             if data_from_cache is not None:
                 return data_from_cache
-            if self._current_fetching is not None:
+            if self._current_fetching is not None and self._current_fetching.cr_running == True:
                 await self._current_fetching
                 continue
             self._current_fetching = self._fetch_data()
@@ -90,23 +90,11 @@ class ArduinoConnection:
         commandString = commandString + "\n"
         print("Command:" + commandString)
         self._writer.write(commandString.encode())
-        responseId = await self.getResponse("TEST")
-        data = self._receivedResponses.pop(responseId)
-        if (data == ""):
-            return None
-        value = self._response_string_to_dic(data)
-
-    def _response_string_to_dic(self, response):
-        respValueList = response.split(";")
-        valuesMap = {}
-        for value in respValueList:
-            if (value != ""):
-                valueList = value.split("=")
-                valuesMap[valueList[0]] = valueList[1]
-        return valuesMap
+        responseId = await self.fetch_reponse()
+        return None
 
 
-async def connect_to_arduino(port: int, baudrate: int) -> ArduinoConnection:
+async def connect_to_arduino(port: str, baudrate: int) -> ArduinoConnection:
     try:
         streams = await serialAsyncio.open_serial_connection(url=port, baudrate=baudrate)
         reader: asyncio.StreamReader = streams[0]

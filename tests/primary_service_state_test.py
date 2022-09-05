@@ -32,5 +32,6 @@ async def test_send_program():
     )
     async for data in service.handle_received_updates():
         if type(data) is EndOfProgramReport:
-            assert(data.program_id=="0")
+            assert(data.program_id
+            =="0")
             break

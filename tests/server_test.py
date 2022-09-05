@@ -20,8 +20,8 @@ from morven_cube_server.background_tasks.connect_to_arduinos import connect_to_a
 from morven_cube_server.background_tasks.update_state_with_current_sensor_data import update_state_with_current_sensor_data
 from morven_cube_server.background_tasks.handle_primary_updates import handle_primary_updates
 
-from tests.dummies.dummy_primary_arduino_service import DummyPrimaryArduinoService
-from tests.dummies.dummy_secondary_arduino_service import DummySecondaryArduinoService
+from morven_cube_server.dummies.dummy_primary_arduino_service import DummyPrimaryArduinoService
+from morven_cube_server.dummies.dummy_secondary_arduino_service import DummySecondaryArduinoService
 
 
 def create_app():

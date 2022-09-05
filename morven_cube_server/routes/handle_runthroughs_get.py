@@ -17,10 +17,11 @@ def _is_int(text: str) -> bool:
 async def handler_pattern_get(request: web.Request) -> web.Response:
     db = consume(request.app, valueType=RubiksDatabaseService)
     specific = request.match_info["specific"]
+    run_index = None
     if specific == "latest":
         run_index = -1
     if run_index is None:
-        if _is_int(specific):
+        if not _is_int(specific):
             raise Exception()
         run_index = int(specific)
 

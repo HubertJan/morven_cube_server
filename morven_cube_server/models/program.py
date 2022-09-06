@@ -30,3 +30,5 @@ class Program:
             elif reversedProgram[i][1] == "'":
                 reversedProgram[i] = reversedProgram[i][0]
         return reversedProgram
+
+    

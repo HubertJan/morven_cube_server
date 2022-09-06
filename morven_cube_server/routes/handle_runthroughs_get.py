@@ -13,35 +13,32 @@ def _is_int(text: str) -> bool:
         return False
 
 
-@routes.get("/runthroughs/{specific}")
+@routes.get("/runthroughs/{id}")
 async def handler_pattern_get(request: web.Request) -> web.Response:
     db = consume(request.app, valueType=RubiksDatabaseService)
-    specific = request.match_info["specific"]
-    if specific == "latest":
-        run_index = -1
-    if run_index is None:
-        if _is_int(specific):
-            raise Exception()
-        run_index = int(specific)
+    id = request.match_info["id"]
 
     runs = db.runthroughs
-    if len(runs) <= run_index:
-        raise Exception()
-
-    run = runs[run_index]
+    searched_run = None
+    for run in runs:
+        if run.id == id:
+            searched_run = run
+            break
+    if searched_run == None:
+        raise Exception("Could not find runthrough with id")
     resp = web.json_response(
         {
-            "id": run.id,
-            "instructions": run.instructions,
-            "startPattern": run.start_pattern,
-            "runtime": run.runtime,
-            "date": run.date,
-            "acc50": run.acc50,
-            "acc100": run.acc100,
-            "cc50": run.cc50,
-            "cc100": run.cc100,
-            "isDouble": run.is_double,
-            "maxSpeed": run.max_speed,
+            "id": searched_run.id,
+            "instructions": searched_run.instructions,
+            "startPattern": searched_run.start_pattern,
+            "runtime": searched_run.runtime,
+            "date": searched_run.date,
+            "acc50": searched_run.acc50,
+            "acc100": searched_run.acc100,
+            "cc50": searched_run.cc50,
+            "cc100": searched_run.cc100,
+            "isDouble": searched_run.is_double,
+            "maxSpeed": searched_run.max_speed,
         },
         status=200
     )

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from morven_cube_server.models.end_of_program_report import EndOfProgramReport
+from morven_cube_server.models.program_settings import ArduinoConstants
 
 
 @dataclass(frozen=True)
@@ -19,13 +20,12 @@ class Runthrough:
     is_double: bool
 
     @classmethod
-    def of_report(cls, report: EndOfProgramReport, date: str) -> Runthrough:
-        program = report.program
-        consts = program.arduino_constants
+    def of_report(cls, report: EndOfProgramReport, arduino_constants: ArduinoConstants, start_pattern: str, date: str) -> Runthrough:
+        consts = arduino_constants
         return Runthrough(
-            id=program.id,
-            instructions=program.instructions,
-            start_pattern=program.start_pattern,
+            id=report.program_id,
+            instructions=report.instructions,
+            start_pattern=start_pattern,
             runtime=report.runtime,
             date=date,
             acc50=consts.acc50,

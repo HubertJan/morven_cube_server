@@ -16,12 +16,12 @@ def _is_int(text: str) -> bool:
 @routes.get("/runthroughs/{id}")
 async def handler_pattern_get(request: web.Request) -> web.Response:
     db = consume(request.app, valueType=RubiksDatabaseService)
-    id = request.match_info["id"]
+    id = int(request.match_info["id"])
 
     runs = db.runthroughs
     searched_run = None
     for run in runs:
-        if run.id == id:
+        if run.id == int(id):
             searched_run = run
             break
     if searched_run == None:

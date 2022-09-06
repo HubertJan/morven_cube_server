@@ -102,17 +102,18 @@ async def test_pattern_patch(aiohttp_client):
 async def test_runthrough_latest_get(aiohttp_client):
     client = await aiohttp_client(create_app())
     await asyncio.sleep(10)
-    resp = await client.patch('/solveCube/solve')
+    resp = await client.post('/solveCube/solve')
     assert resp.status == 200
     text = await resp.text()
     data = json.loads(text)
-    assert data["id"] == 0
+    assert data["id"] != None
+    id = data["id"]
     await asyncio.sleep(5)
-    resp = await client.get('/runthroughs/latest')
+    resp = await client.get(f"/runthroughs/{id}")
     assert resp.status == 200
     text = await resp.text()
     data = json.loads(text)
-    assert data["id"] == 0
+    assert data["id"] == id
 
 
 @pytest.mark.asyncio
@@ -130,8 +131,14 @@ async def test_pattern_get(aiohttp_client):
 async def test_verified_pattern_patch(aiohttp_client):
     client = await aiohttp_client(create_app())
     await asyncio.sleep(10)
-    resp = await client.patch('/verifiedPattern/FLBUULFFLFDURRDBUBUUDDFFBRDDBLRDRFLLRLRULFUDRRBDBBBUFL')
+    resp = await client.put('/pattern/FLBUULFFLFDURRDBUBUUDDFFBRDDBLRDRFLLRLRULFUDRRBDBBBUFL')
     assert resp.status == 200
-    text = await resp.text()
-    data = json.loads(text)
-    assert data["pattern"] == "FLBUULFFLFDURRDBUBUUDDFFBRDDBLRDRFLLRLRULFUDRRBDBBBUFL"
+
+@pytest.mark.asyncio
+async def test_running_job(aiohttp_client):
+    client = await aiohttp_client(create_app())
+    await asyncio.sleep(10)
+    resp = await client.post('/solveCube/solve')
+    assert resp.status == 200
+    resp = await client.get("/runningJob")
+    assert resp.status == 200

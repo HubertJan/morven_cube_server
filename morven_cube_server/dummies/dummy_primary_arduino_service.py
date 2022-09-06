@@ -31,7 +31,8 @@ class DummyPrimaryArduinoService(PrimaryService):
             if self._current_program is None:
                 continue
             yield EndOfProgramReport(
-                program=self._current_program,
+                instructions=self._current_program.instructions,
+                program_id=self._current_program.id,
                 runtime=5
             )
             self._current_program = None

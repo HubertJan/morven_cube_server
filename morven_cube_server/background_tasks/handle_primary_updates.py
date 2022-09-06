@@ -19,13 +19,18 @@ async def _handle_updates(state: ServerState,
                           database: RubiksDatabaseService,
                           ) -> None:
     async for report in service.handle_received_updates():
+        start_pattern = str(state.cube_pattern)
+
         state.cube_pattern = state.cube_pattern.execute_instructions(
             report.instructions)
         now = datetime.now()
         now_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        consts = state.standard_arduino_constants
         database.add_finished_runthrough(
             date=now_string,
             report=report,
+            start_pattern=start_pattern,
+            arduino_constants=consts
         )
         arduino_state.current_program = None
         arduino_state.status = PrimaryArduinoStatus.IDLING

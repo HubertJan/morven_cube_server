@@ -1,4 +1,4 @@
-import re
+from morven_cube_server.models.program_settings import ArduinoConstants
 from morven_cube_server.models.end_of_program_report import EndOfProgramReport
 from morven_cube_server.models.runthrough import Runthrough
 from morven_cube_server.services.api.database import LocalFileDatabase
@@ -10,8 +10,8 @@ class RubiksDatabaseService:
         self._database = LocalFileDatabase(
             database_file_name=database_file_name)
 
-    def add_finished_runthrough(self, report: EndOfProgramReport, date: str) -> None:
-        runthrough = Runthrough.of_report(report, date)
+    def add_finished_runthrough(self, report: EndOfProgramReport, date: str, start_pattern: str, arduino_constants: ArduinoConstants) -> None:
+        runthrough = Runthrough.of_report(report, date=date,arduino_constants=arduino_constants, start_pattern=start_pattern)
         runthrough_dict = runthrough.__dict__
         data = {}
         for key, value in runthrough_dict.items():

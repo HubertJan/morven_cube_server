@@ -10,7 +10,9 @@ from morven_cube_server.state_handler.provider import consume
 async def handler_get_sensor(request: web.Request) -> web.Response:
     arduino_state = consume(request.app, valueType=PrimaryServiceState)
     if arduino_state.current_program == None:
-        raise Exception("No program currently running.")
+        return web.json_response(
+            status=204
+        )
     return web.json_response(
         data={
             "instructions":  arduino_state.current_program.instructions,
@@ -20,6 +22,3 @@ async def handler_get_sensor(request: web.Request) -> web.Response:
         },
         status=200
     )
-
-
-

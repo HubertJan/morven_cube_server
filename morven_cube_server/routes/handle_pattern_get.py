@@ -9,7 +9,7 @@ from morven_cube_server.state_handler.provider import consume
 async def handler_pattern_get(request: web.Request) -> web.Response:
     state = consume(request.app, valueType=ServerState)
     if state.cube_pattern is None:
-        raise Exception()
+           return web.json_response(status=204)
     resp = web.json_response(
         {
             "pattern": str(state.cube_pattern)

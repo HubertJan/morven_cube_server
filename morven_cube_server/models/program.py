@@ -6,7 +6,7 @@ from morven_cube_server.helper.cube_simulator import CubeSimulator
 @dataclass(frozen=True)
 class Program:
     instructions: str
-    id: int
+    id: str
     start_pattern: str
     arduino_constants: ArduinoConstants
 

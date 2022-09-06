@@ -12,14 +12,12 @@ from morven_cube_server.state_handler.provider import provide
 from morven_cube_server.background_tasks.handle_primary_updates import handle_primary_updates
 
 from morven_cube_server.services.primary_service_state import PrimaryArduinoService
-from morven_cube_server.services.secondary_arduino_service import SecondaryArduinoService
-from morven_cube_server.models.primary_arduino_status import PrimaryArduinoStatus
+from morven_cube_server.services.rubiks_database_service import RubiksDatabaseService
 
 from morven_cube_server.routes import *
 
 from morven_cube_server.dummies.dummy_primary_arduino_service import DummyPrimaryArduinoService
 from morven_cube_server.dummies.dummy_secondary_arduino_service import DummySecondaryArduinoService
-
 
 
 def run_server() -> None:
@@ -56,7 +54,8 @@ def run_server() -> None:
 
     web.run_app(app, host='localhost', port=9000)
 
-def run_test_server()-> None:
+
+def run_test_server() -> None:
     app = web.Application()
     app.add_routes(routes=routes)
 
@@ -81,6 +80,10 @@ def run_test_server()-> None:
     provide(app=app,
             value=PrimaryServiceState(),
             valueType=PrimaryServiceState)
+    provide(app=app,
+            value=RubiksDatabaseService(database_file_name="db_cube.csv"),
+            valueType=RubiksDatabaseService
+            )
 
     add_background_task(
         app=app,

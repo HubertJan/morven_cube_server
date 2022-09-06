@@ -24,7 +24,7 @@ class RubiksDatabaseService:
         runs = []
         for record in records:
             runs.append(Runthrough(
-                id=int(record["id"]),
+                id=record["id"],
                 instructions=record["instructions"],
                 start_pattern=record["start_pattern"],
                 runtime=int(record["runtime"]),

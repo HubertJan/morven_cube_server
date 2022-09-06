@@ -7,7 +7,7 @@ from morven_cube_server.models.program_settings import ArduinoConstants
 
 @dataclass(frozen=True)
 class Runthrough:
-    id: int
+    id: str
     instructions: str
     start_pattern: str
     runtime: int

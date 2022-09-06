@@ -52,9 +52,10 @@ async def handle_pattern_patch(request: web.Request) -> web.Response:
     program = Program(
         arduino_constants=updated_conts,
         start_pattern=str(state.cube_pattern),
-        id=uuid.uuid4().int,
+        id=str(uuid.uuid4()),
         instructions=instructions
     )
+
     await arduino.send_program(program)
     arduino_state.current_program = program
     arduino_state.status = PrimaryArduinoStatus.RUNNING

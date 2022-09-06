@@ -85,12 +85,12 @@ async def test_sensor_update(aiohttp_client):
 async def test_pattern_patch(aiohttp_client):
     client = await aiohttp_client(create_app())
     await asyncio.sleep(10)
-    resp = await client.patch('/pattern/solve')
+    resp = await client.post('/solveCube/solve')
     assert resp.status == 200
     text = await resp.text()
     data = json.loads(text)
-    assert data["program_id"] == 0
-    await asyncio.sleep(5)
+    assert data["id"] != None
+    await asyncio.sleep(10)
     resp = await client.get('/pattern')
     assert resp.status == 200
     text = await resp.text()
@@ -102,11 +102,11 @@ async def test_pattern_patch(aiohttp_client):
 async def test_runthrough_latest_get(aiohttp_client):
     client = await aiohttp_client(create_app())
     await asyncio.sleep(10)
-    resp = await client.patch('/pattern/solve')
+    resp = await client.patch('/solveCube/solve')
     assert resp.status == 200
     text = await resp.text()
     data = json.loads(text)
-    assert data["program_id"] == 0
+    assert data["id"] == 0
     await asyncio.sleep(5)
     resp = await client.get('/runthroughs/latest')
     assert resp.status == 200

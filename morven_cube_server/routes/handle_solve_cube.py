@@ -1,3 +1,4 @@
+from typing import Any
 import uuid
 from aiohttp import web
 from morven_cube_server.routes.routes_object import routes

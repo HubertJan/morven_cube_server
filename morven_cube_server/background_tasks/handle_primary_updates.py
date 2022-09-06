@@ -19,7 +19,8 @@ async def _handle_updates(state: ServerState,
                           database: RubiksDatabaseService,
                           ) -> None:
     async for report in service.handle_received_updates():
-        state.cube_pattern = CubePattern(report.program.end_pattern)
+        state.cube_pattern = state.cube_pattern.execute_instructions(
+            report.instructions)
         now = datetime.now()
         now_string = now.strftime("%d/%m/%Y %H:%M:%S")
         database.add_finished_runthrough(

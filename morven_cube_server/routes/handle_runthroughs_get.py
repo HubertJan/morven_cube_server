@@ -57,7 +57,7 @@ async def handler_pattern_get(request: web.Request) -> web.Response:
     runs = db.runthroughs
     data = []
     for run in runs:
-        data.append(_convert_runthrough_to_dict(run),)
+        data.append(_convert_runthrough_to_dict(run))
     resp = web.json_response(
         {
             "data": data

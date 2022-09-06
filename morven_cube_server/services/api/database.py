@@ -24,8 +24,9 @@ class LocalFileDatabase:
         if self._data is None:
             raise Exception()
         self._read_file()
-        record_map = {}
+        
         for record in self._data.values:
+            record_map = {}
             index = 0
             for key in self._data.keys():
                 record_map[key] = record[index]

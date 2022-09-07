@@ -23,11 +23,29 @@ class SecondaryArduinoService(Notifier):
     def baudrate(self) -> int:
         return self._baudrate
 
-    async def send_light(self, inst: str) -> None:
+    async def _send_light(self, inst: str) -> None:
         await self._connection.send_command("sensor", inst)
 
-    async def sendMotor(self, inst: str) -> None:
+    async def _send_motor(self, inst: str) -> None:
         await self._connection.send_command("motor", inst)
+
+    async def open_flap(self):
+        await self._send_motor("OP")
+
+    async def close_flap(self):
+        await self._send_motor("CL")
+
+    async def turn_on_white_light(self):
+        await self._send_motor("WH")
+
+    async def turn_off_white_light(self):
+        await self._send_motor("OF")
+
+    async def clamp_cube(self):
+        await self._send_motor("TO")
+
+    async def unclamp_cube(self):
+        await self._send_motor("AB")
 
     async def handle_received_sensor_data(self) -> AsyncIterator[SensorData]:
         while True:

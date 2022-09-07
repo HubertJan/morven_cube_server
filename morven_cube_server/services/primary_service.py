@@ -26,6 +26,10 @@ class _PrimaryService(SupportsAddListener, Protocol):
     async def send_program(self, program: Program) -> None:
         pass
 
+    async def rotate_cube(self, rotationInDegree: int) -> None:
+        pass
+    
+
 
 class PrimaryService(_PrimaryService):
     pass

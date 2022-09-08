@@ -11,7 +11,7 @@ from morven_cube_server.state_handler.background_task import add_background_task
 from morven_cube_server.state_handler.provider import provide
 from morven_cube_server.background_tasks.handle_primary_updates import handle_primary_updates
 
-from morven_cube_server.services.primary_service_state import PrimaryArduinoService
+from morven_cube_server.services.primary_arduino_service import PrimaryArduinoService
 from morven_cube_server.services.rubiks_database_service import RubiksDatabaseService
 
 from morven_cube_server.routes import *

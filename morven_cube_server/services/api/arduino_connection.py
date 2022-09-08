@@ -106,3 +106,13 @@ async def connect_to_arduino(port: str, baudrate: int) -> ArduinoConnection:
         return ArduinoConnection(reader=reader, writer=writer)
     except:
         raise Exception("Can not connect to Arduino.")
+
+
+def convert_response_string_to_dic(response: str) -> dict[str, Any]:
+    respValueList = response.split(";")
+    valuesMap = {}
+    for value in respValueList:
+        if (value != ""):
+            valueList = value.split("=")
+            valuesMap[valueList[0]] = valueList[1]
+    return valuesMap

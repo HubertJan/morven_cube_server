@@ -9,7 +9,7 @@ from morven_cube_server.state_handler.provider import consume
 @routes.get('/runningJob')
 async def handler_get_sensor(request: web.Request) -> web.Response:
     arduino_state = consume(request.app, valueType=PrimaryServiceState)
-    if arduino_state.current_program == None:
+    if arduino_state.current_program is None:
         return web.json_response(
             status=204
         )

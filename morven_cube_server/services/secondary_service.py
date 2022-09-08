@@ -33,7 +33,7 @@ class _SecondaryService(SupportsAddListener, Protocol):
     async def turn_off_white_light(self) -> None:
         pass
 
-    async def clamp_cube(self):
+    async def clamp_cube(self) -> None:
         pass
 
     async def unclamp_cube(self) -> None:

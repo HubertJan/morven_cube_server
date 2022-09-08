@@ -157,7 +157,7 @@ class CubeSimulator:
             if (pattern[middleCubeSide] != counterRef):
                 return False
         for field in pattern:
-            if (colorCounters[field] == None):
+            if (colorCounters[field] is None):
                 return False
             colorCounters[field] += 1
         for counterRef in colorCounters:

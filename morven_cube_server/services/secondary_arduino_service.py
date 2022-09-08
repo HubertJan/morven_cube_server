@@ -1,12 +1,12 @@
 from typing import Any, AsyncIterator
 import typing
 from morven_cube_server.states.server_state import SensorData
-from morven_cube_server.services.api.arduino_connection import ArduinoConnection, connect_to_arduino
+from morven_cube_server.services.api.arduino_connection import ArduinoConnection, connect_to_arduino, convert_response_string_to_dic
 from morven_cube_server.state_handler.notifier import Notifier
 
 
 class SecondaryArduinoService(Notifier):
-    async def connect(self, port: int, baudrate: int) -> None:
+    async def connect(self, port: str, baudrate: int) -> None:
         self.notify()
         self._connection = await connect_to_arduino(
             baudrate=baudrate,
@@ -16,7 +16,7 @@ class SecondaryArduinoService(Notifier):
         self._baudrate = baudrate
 
     @property
-    def port(self) -> int:
+    def port(self) -> str:
         return self._port
 
     @property
@@ -29,27 +29,28 @@ class SecondaryArduinoService(Notifier):
     async def _send_motor(self, inst: str) -> None:
         await self._connection.send_command("motor", inst)
 
-    async def open_flap(self):
+    async def open_flap(self) -> None:
         await self._send_motor("OP")
 
-    async def close_flap(self):
+    async def close_flap(self) -> None:
         await self._send_motor("CL")
 
-    async def turn_on_white_light(self):
+    async def turn_on_white_light(self) -> None:
         await self._send_motor("WH")
 
-    async def turn_off_white_light(self):
+    async def turn_off_white_light(self) -> None:
         await self._send_motor("OF")
 
-    async def clamp_cube(self):
+    async def clamp_cube(self) -> None:
         await self._send_motor("TO")
 
-    async def unclamp_cube(self):
+    async def unclamp_cube(self) -> None:
         await self._send_motor("AB")
 
     async def handle_received_sensor_data(self) -> AsyncIterator[SensorData]:
         while True:
-            data: dict[str, Any] = await self._connection.fetch_updates()
+            raw_data = await self._connection.fetch_updates()
+            data = convert_response_string_to_dic(raw_data)
             sensor_data: SensorData = _convert_to_sensor_data(data)
             yield sensor_data
 

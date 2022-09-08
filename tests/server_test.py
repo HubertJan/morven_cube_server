@@ -99,6 +99,25 @@ async def test_pattern_patch(aiohttp_client):
 
 
 @pytest.mark.asyncio
+async def test_pattern_patch_with_changed_constants(aiohttp_client):
+    client = await aiohttp_client(create_app())
+    await asyncio.sleep(10)
+    resp = await client.post('/solveCube/solve', json={
+        "cc50": 100,
+    })
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["id"] != None
+    await asyncio.sleep(10)
+    resp = await client.get('/pattern')
+    assert resp.status == 200
+    text = await resp.text()
+    data = json.loads(text)
+    assert data["pattern"] == "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB"
+
+
+@pytest.mark.asyncio
 async def test_runthrough_latest_get(aiohttp_client):
     client = await aiohttp_client(create_app())
     await asyncio.sleep(10)
@@ -133,6 +152,7 @@ async def test_verified_pattern_patch(aiohttp_client):
     await asyncio.sleep(10)
     resp = await client.put('/pattern/FLBUULFFLFDURRDBUBUUDDFFBRDDBLRDRFLLRLRULFUDRRBDBBBUFL')
     assert resp.status == 200
+
 
 @pytest.mark.asyncio
 async def test_running_job(aiohttp_client):

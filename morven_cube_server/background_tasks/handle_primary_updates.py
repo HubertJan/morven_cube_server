@@ -20,7 +20,6 @@ async def _handle_updates(state: ServerState,
                           ) -> None:
     async for report in service.handle_received_updates():
         start_pattern = str(state.cube_pattern)
-
         state.cube_pattern = state.cube_pattern.execute_instructions(
             report.instructions)
         now = datetime.now()

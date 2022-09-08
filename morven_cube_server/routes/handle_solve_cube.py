@@ -14,12 +14,25 @@ from morven_cube_server.states.primary_arduino_state import PrimaryServiceState
 from morven_cube_server.state_handler.provider import consume
 
 
-def _update_arduino_constants_by_query(constants: ArduinoConstants, query: Any) -> ArduinoConstants:
+async def _update_arduino_constants_by_body(constants: ArduinoConstants, request: web.Request) -> ArduinoConstants:
+    if not request.has_body:
+        return constants
+    data = await request.json()
     updated_constants = constants.update()
-    for key, value in query.items():  # type: ignore
+    for key, value in data.items():  # type: ignore
         match key:
             case "cc50":
                 updated_constants = constants.update(cc50=int(value))
+            case "cc100":
+                updated_constants = constants.update(cc100=int(value))
+            case "acc50":
+                updated_constants = constants.update(acc50=int(value))
+            case "acc100":
+                updated_constants = constants.update(acc100=int(value))
+            case "maxSp":
+                updated_constants = constants.update(max_speed=int(value))
+            case "isDouble":
+                updated_constants = constants.update(is_double=bool(value))
     return updated_constants
 
 
@@ -47,8 +60,9 @@ async def handle_pattern_patch(request: web.Request) -> web.Response:
     arduino = consume(request.app, valueType=PrimaryService)
     patched_pattern = _extract_pattern(request=request)
     instructions = Kociemba.solve(str(state.cube_pattern), patched_pattern)
-    updated_conts = _update_arduino_constants_by_query(
-        state.standard_arduino_constants, request.query)
+
+    updated_conts = await _update_arduino_constants_by_body(
+        state.standard_arduino_constants, request)
     program = Program(
         arduino_constants=updated_conts,
         start_pattern=str(state.cube_pattern),

@@ -9,11 +9,11 @@ from morven_cube_server.state_handler.notifier import Notifier, SupportsAddListe
 
 
 class _PrimaryService(SupportsAddListener, Protocol):
-    async def connect(self, port: int, baudrate: int) -> None:
+    async def connect(self, port: str, baudrate: int) -> None:
         pass
 
     @property
-    def port(self) -> int:
+    def port(self) -> str:
         pass
 
     @property
@@ -28,7 +28,6 @@ class _PrimaryService(SupportsAddListener, Protocol):
 
     async def rotate_cube(self, rotationInDegree: int) -> None:
         pass
-    
 
 
 class PrimaryService(_PrimaryService):

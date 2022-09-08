@@ -4,6 +4,7 @@ from morven_cube_server.background_tasks.update_state_with_current_sensor_data i
 from morven_cube_server.background_tasks.connect_to_arduinos import connect_to_arduinos
 from morven_cube_server.models.program_settings import ArduinoConstants
 from morven_cube_server.services.primary_service import PrimaryService
+from morven_cube_server.services.secondary_arduino_service import SecondaryArduinoService
 from morven_cube_server.services.secondary_service import SecondaryService
 from morven_cube_server.states.primary_arduino_state import PrimaryServiceState
 from morven_cube_server.states.server_state import ServerState
@@ -26,7 +27,7 @@ def run_server() -> None:
 
     provide(app=app, value=PrimaryArduinoService(),
             valueType=PrimaryService)
-    provide(app=app, value="",
+    provide(app=app, value=SecondaryArduinoService(),
             valueType=SecondaryService)
 
     provide(app=app, value=ServerState(
@@ -50,6 +51,10 @@ def run_server() -> None:
     add_background_task(
         app=app,
         task_func=update_state_with_current_sensor_data,
+    )
+    add_background_task(
+        app=app,
+        task_func=handle_primary_updates
     )
 
     web.run_app(app, host='localhost', port=9000)

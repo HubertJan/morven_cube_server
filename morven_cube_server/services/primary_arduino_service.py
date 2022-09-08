@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, AsyncGenerator, AsyncIterator, Awaitable
 from morven_cube_server.models.end_of_program_report import EndOfProgramReport
 from morven_cube_server.models.program import Program
@@ -8,12 +9,15 @@ from morven_cube_server.services.api.arduino_connection import ArduinoConnection
 from morven_cube_server.state_handler.notifier import Notifier
 
 
-class PrimaryArduinoService(Notifier):
+class PrimaryArduinoService(PrimaryService):
     async def connect(self, port: str, baudrate: int) -> None:
+        self._connection = None
         self._connection = await connect_to_arduino(port, baudrate)
 
     # replace current program
     async def send_program(self, program: Program) -> None:
+        if self._connection is None:
+            raise Exception("Not connected yet")
         await self._connection.send_command(
             "program",
             program.instructions,
@@ -28,20 +32,29 @@ class PrimaryArduinoService(Notifier):
         return None
 
     async def send_rotate_cube(self, rotationInDegree: int) -> None:
+        if self._connection is None:
+            raise Exception("Not connected yet")
         await self._connection.send_command("rotate", rotationInDegree)
 
     async def pause(self) -> None:
+        if self._connection is None:
+            raise Exception("Not connected yet")
         await self._connection.send_command("pause true")
         return None
 
     async def unpause(self) -> None:
+        if self._connection is None:
+            raise Exception("Not connected yet")
         await self._connection.send_command("pause false")
         return None
 
-    async def handle_received_updates(self) -> AsyncIterator[EndOfProgramReport | RunningProgramReport]:
+    async def handle_received_updates(self) -> AsyncIterator[EndOfProgramReport]:
         while True:
+            if self._connection is None:
+                await asyncio.sleep(1)
+                continue
             raw_data = await self._connection.fetch_updates()
-            #sensor_data: SensorData = convert_to_sensor_data(data)
+            # sensor_data: SensorData = convert_to_sensor_data(data)
             data = convert_response_string_to_dic(raw_data)
             if (data["st"] == "FINISHED"):
                 converted_data = convert_response_dict_to_end_of_program_report(

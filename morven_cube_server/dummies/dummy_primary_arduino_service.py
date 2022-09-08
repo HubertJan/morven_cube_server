@@ -12,13 +12,13 @@ from morven_cube_server.services.primary_service import PrimaryService
 class DummyPrimaryArduinoService(PrimaryService):
     _current_program: Optional[Program] = None
 
-    async def connect(self, port: int, baudrate: int) -> None:
+    async def connect(self, port: str, baudrate: int) -> None:
         await asyncio.sleep(3)
         self._port = port
         self._baudrate = baudrate
 
     @property
-    def port(self) -> Optional[int]:
+    def port(self) -> str:
         return self._port
 
     @property

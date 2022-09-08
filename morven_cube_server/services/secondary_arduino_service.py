@@ -1,13 +1,14 @@
 from typing import Any, AsyncIterator
 import typing
+from morven_cube_server.services.secondary_service import SecondaryService
 from morven_cube_server.states.server_state import SensorData
-from morven_cube_server.services.api.arduino_connection import ArduinoConnection, connect_to_arduino, convert_response_string_to_dic
+from morven_cube_server.services.api.arduino_connection import connect_to_arduino, convert_response_string_to_dic
 from morven_cube_server.state_handler.notifier import Notifier
 
 
-class SecondaryArduinoService(Notifier):
+class SecondaryArduinoService(SecondaryService):
     async def connect(self, port: str, baudrate: int) -> None:
-        self.notify()
+        # self.notify()
         self._connection = await connect_to_arduino(
             baudrate=baudrate,
             port=port

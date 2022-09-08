@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 import time
-from typing import Any, Awaitable, Coroutine
+from typing import Any, Awaitable, Coroutine, Optional
 import serial
 import serial_asyncio as serialAsyncio
 import asyncio
@@ -57,10 +57,10 @@ class ArduinoConnection:
                 continue
             return fetched_data.message
 
-    def _cache(self, data: _Data):
+    def _cache(self, data: _Data) -> None:
         self._cached_data[data.data_type].append(data.message)
 
-    def _handle_data_from_cache(self, dataType: DataType):
+    def _handle_data_from_cache(self, dataType: DataType) -> Optional[str]:
         if len(self._cached_data[dataType]) == 0:
             return None
         msg = self._cached_data[dataType].pop(0)
@@ -81,7 +81,7 @@ class ArduinoConnection:
             return _Data(data_type=DataType.UPDATE, message=message)
         raise Exception("Invalid channel")
 
-    async def send_command(self, command, *argv) -> Awaitable[None]:
+    async def send_command(self, command: str, *argv: Any) -> None:
         commandString = command
         for arg in argv:
             if arg is not str:

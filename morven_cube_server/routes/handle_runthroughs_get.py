@@ -19,9 +19,6 @@ def _is_int(text: str) -> bool:
 @routes.get("/runthroughs/{id}")
 async def handle_runthroughs_by_id_get(request: web.Request) -> web.Response:
     db = consume(request.app, valueType=RubiksDatabaseService)
-    id = request.match_info["id"]
-    if id is None or id == "":
-        return await handle_runthroughs_get(request=request)
     runs = db.runthroughs
     searched_run = None
     for run in runs:
@@ -53,7 +50,7 @@ def _convert_runthrough_to_dict(runthrough: Runthrough) -> dict[str, Any]:
         "maxSpeed": runthrough.max_speed,
     }
 
-
+@routes.get("/runthroughs")
 async def handle_runthroughs_get(request: web.Request) -> web.Response:
     db = consume(request.app, valueType=RubiksDatabaseService)
     runs = db.runthroughs

@@ -19,6 +19,7 @@ async def handle_scan_pattern_get(request: web.Request) -> web.Response:
     primaryService = consume(request.app, valueType=PrimaryService)
     secondaryService = consume(request.app, valueType=SecondaryService)
 
+
     await secondaryService.open_flap()
     await primaryService.rotate_cube(45)
     await secondaryService.turn_on_white_light()
@@ -27,11 +28,13 @@ async def handle_scan_pattern_get(request: web.Request) -> web.Response:
     for i in range(0, 4):
         img = None
         attempts = 0
-        while img is None:
+        is_done = False
+        while not is_done:
             try:
                 img = capture_image(state.camera_port)
                 (cube_faces[i], row) = analyze_image_for_cube_face_and_one_row(
                     img)
+                is_done = True
             except:
                 attempts += 1
                 if attempts >= 10:

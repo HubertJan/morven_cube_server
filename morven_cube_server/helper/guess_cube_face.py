@@ -1,27 +1,28 @@
-from curses.panel import bottom_panel
-from operator import le
-from re import U
-import re
 from cube_image_scanner.models.standard_cube_face import StandardCubeFace, StandardCubeColors
 from cube_image_scanner.models.standard_cube_pattern import StandardCubePattern
 
 
 def convert_standard_cube_pattern_to_pattern_string(pattern: StandardCubePattern) -> str:
     pattern_string = ""
-    pattern_string += _convert_face_to_string(pattern.up)
-    pattern_string += _convert_face_to_string(pattern.right)
-    pattern_string += _convert_face_to_string(pattern.front)
-    pattern_string += _convert_face_to_string(pattern.down)
-    pattern_string += _convert_face_to_string(pattern.left)
-    pattern_string += _convert_face_to_string(pattern.back)
+    pattern_string += _convert_face_to_string(pattern.up, StandardCubeColors.UP)
+    pattern_string += _convert_face_to_string(pattern.right, StandardCubeColors.RIGHT)
+    pattern_string += _convert_face_to_string(pattern.front, StandardCubeColors.FRONT)
+    pattern_string += _convert_face_to_string(pattern.down, StandardCubeColors.DOWN)
+    pattern_string += _convert_face_to_string(pattern.left, StandardCubeColors.LEFT)
+    pattern_string += _convert_face_to_string(pattern.back, StandardCubeColors.BACK)
     return pattern_string
 
 
-def _convert_face_to_string(face: StandardCubeFace) -> str:
+def _convert_face_to_string(face: StandardCubeFace, side: StandardCubeColors) -> str:
     pattern_string = ""
+    index = 0
     for sticker in face:
+        if index == 4:
+            # StandardCubeFace does not include info about center-middle sticker, so its assumed that it has the color of its side
+            pattern_string += _convert_standard_cube_color_to_pattern_string_char(side)
         pattern_string += _convert_standard_cube_color_to_pattern_string_char(
             sticker)
+        index += 1
     return pattern_string
 
 
